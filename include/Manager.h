@@ -4,7 +4,7 @@
 
 class Manager {
     bool isGrabbing = false;
-    float distance = 140.f;
+    float distance = 100.f;
     RE::NiPoint2 angle = {0, 0};
     RE::NiPoint2 position = {0, 0};
     inline static Manager* singleton = NULL;
@@ -19,7 +19,7 @@ public:
     void SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
         if (value) {
             angle = {0, 0};
-            distance = 140.f;
+            distance = 100.f;
             position = {0, 0};
             if (ref) {
                 if (auto ref2 = ref.get()) {

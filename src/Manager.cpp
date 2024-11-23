@@ -60,11 +60,10 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     obj->Update3DPosition(true);
 
     auto object3D = obj->Get3D();
+
     if (!object3D) {
         return; 
     }
-
-    logger::trace("not 2d");
 
     auto body = object3D->GetCollisionObject()->GetRigidBody();
 
@@ -72,11 +71,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
         return;
     }
 
-    logger::trace("body");
-
-    glm::vec3 targetPoint(pos.x, pos.y, pos.z);  
-    glm::vec3 currentPosition = {obj->GetPositionX(), obj->GetPositionY(),obj->GetPositionZ()};  
-    glm::vec3 direction = targetPoint - currentPosition;
+    auto direction = pos - obj->GetPosition();
 
     RE::hkVector4 velocityVector = {direction.x, direction.y, direction.z, 0.0f};
 
