@@ -52,10 +52,35 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     float y = position.x * sin(-cameraAngle.z);
     float z = position.y;
 
-    SetPosition(obj, rayPosition + RE::NiPoint3(x, y, z));
+    auto pos = rayPosition + RE::NiPoint3(x, y, z);
+
+    //SetPosition(obj, );
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
     obj->Update3DPosition(true);
+
+    auto object3D = obj->Get3D();
+    if (!object3D) {
+        return; 
+    }
+
+    logger::trace("not 2d");
+
+    auto body = object3D->GetCollisionObject()->GetRigidBody();
+
+    if (!body) {
+        return;
+    }
+
+    logger::trace("body");
+
+    glm::vec3 targetPoint(pos.x, pos.y, pos.z);  
+    glm::vec3 currentPosition = {obj->GetPositionX(), obj->GetPositionY(),obj->GetPositionZ()};  
+    glm::vec3 direction = targetPoint - currentPosition;
+
+    RE::hkVector4 velocityVector = {direction.x, direction.y, direction.z, 0.0f};
+
+    body->SetLinearVelocity(velocityVector);  
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) {
