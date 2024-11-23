@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Manager.h"
 class GrabEventHandler : public RE::BSTEventSink<RE::TESGrabReleaseEvent> {
 public:
     // This method will be called when the event is triggered

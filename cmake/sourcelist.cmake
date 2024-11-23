@@ -4,4 +4,5 @@ set(SOURCE_FILES
 	src/Events.cpp
 	src/Raycast.cpp
 	src/RayCollector.cpp
+	src/Manager.cpp
 )

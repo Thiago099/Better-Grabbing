@@ -9,4 +9,5 @@ set(HEADER_FILES
 	include/UI.h
 	include/Raycast.h
 	include/RayCollector.h
+	include/Manager.h
 )
