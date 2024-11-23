@@ -51,10 +51,39 @@ namespace Hooks {
 
     struct ProcessInputQueueHook {
 
+        static inline bool doRotate = false;
+        static inline bool doTranslate = false;
+        static inline bool doTranslateZ = false;
+
         static inline bool InputEvent(RE::InputEvent* event) {
 
             if (auto button = event->AsButtonEvent()) {
                 if (button->device == RE::INPUT_DEVICE::kMouse) {
+                    if (button->GetIDCode() == RE::BSWin32MouseDevice::Key::kLeftButton) {
+                        if (button->IsDown()) {
+                            doTranslate = true;
+                        } else if (button->IsUp()) {
+                            doTranslate = false;
+                        }
+                        return true;
+                    }
+                    if (button->GetIDCode() == RE::BSWin32MouseDevice::Key::kRightButton) {
+                        if (button->IsDown()) {
+                            doRotate = true;
+                        } else if (button->IsUp()) {
+                            doRotate = false;
+                        }
+                        return true;
+                    }
+                    if (button->GetIDCode() == RE::BSWin32MouseDevice::Key::kMiddleButton) {
+       
+                        if (button->IsDown()) {
+                            doTranslateZ = true;
+                        } else if (button->IsUp()) {
+                            doTranslateZ = false;
+                        }
+                        return true;
+                    }
                     if (button->GetIDCode() == RE::BSWin32MouseDevice::Key::kWheelUp) {
                         Manager::GetSingleton()->IncrementDistance(3.f);
                         return true;
@@ -63,6 +92,24 @@ namespace Hooks {
                         return true;
                     }
                 }
+            }
+            if (auto move = event->AsMouseMoveEvent()) {
+                bool block = false;
+                if (doRotate) {
+                    Manager::GetSingleton()->RotateX(move->mouseInputX * 0.005);
+                    Manager::GetSingleton()->RotateY(move->mouseInputY * 0.005);
+                    block = true;
+                }
+                if (doTranslateZ) {
+                    Manager::GetSingleton()->IncrementDistance(-move->mouseInputY * 0.05);
+                    block = true;
+                }
+                if (doTranslate) {
+                    Manager::GetSingleton()->TranslateX(move->mouseInputX * 0.05);
+                    Manager::GetSingleton()->TranslateY(-move->mouseInputY * 0.05);
+                    block = true;
+                }
+                return block;
             }
 
             return false;
@@ -73,6 +120,7 @@ namespace Hooks {
 
             if (!manager->GetIsGrabbing()) {
                 originalFunction(a_dispatcher, a_event);
+                return;
             }
 
             auto first = *a_event;

@@ -7,9 +7,7 @@ RE::BSEventNotifyControl GrabEventHandler::ProcessEvent(
         return RE::BSEventNotifyControl::kContinue;
     }
 
-    Manager::GetSingleton()->SetGrabbing(a_event->grabbed);
-
-    logger::trace("{},{}", a_event->grabbed, a_event->ref.get()->GetBaseObject()->GetName());
+    Manager::GetSingleton()->SetGrabbing(a_event->grabbed, a_event->ref);
 
     return RE::BSEventNotifyControl::kContinue;
 

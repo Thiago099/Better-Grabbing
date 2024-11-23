@@ -32,11 +32,11 @@ RE::NiObject* GetPlayer3d() {
 }
 
 
-inline void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition) {
+void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition) {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
-    auto yoffsetRotation = 0.f;
-    auto xoffsetRoation = 0.f;
+    auto yoffsetRotation = angle.y;
+    auto xoffsetRoation = angle.x;
 
     auto c = glm::rotate(glm::mat4(1.0f), -cameraAngle.z, glm::vec3(1.0f, 0.0f, 0.0f));
     auto b = glm::rotate(glm::mat4(1.0f), yoffsetRotation, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -48,9 +48,9 @@ inline void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosit
     float newPitch = asin(-rotationMatrix[2][0]);
     float newRoll = atan2(rotationMatrix[2][1], rotationMatrix[2][2]);
 
-    float x = 0.f * cos(-cameraAngle.z);
-    float y = 0.f * sin(-cameraAngle.z);
-    float z = 0.f;
+    float x = position.x * cos(-cameraAngle.z);
+    float y = position.x * sin(-cameraAngle.z);
+    float z = position.y;
 
     SetPosition(obj, rayPosition + RE::NiPoint3(x, y, z));
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
@@ -60,7 +60,7 @@ inline void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosit
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) {
     auto rayMaxDistance = distance;
-    SKSE::GetTaskInterface()->AddTask([obj, rayMaxDistance]() {
+    SKSE::GetTaskInterface()->AddTask([this, obj, rayMaxDistance]() {
         auto player3d = GetPlayer3d();
 
         const auto evaluator = [player3d, obj](RE::NiAVObject* mesh) {
