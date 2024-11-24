@@ -33,6 +33,8 @@ public:
     float ButtonTranslateZSensitivity = 1;
 
     float TranslateZMaxDistance = 1000.0f;
-    float TranslateZMinDistance = 20.0f;
+    float TranslateZMinDistance = 60.0f;
     float TranslateZMinDefaultDistance = 100.f;
+
+    float DragMovementDamping = 1.0f;
 };

@@ -74,8 +74,10 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     if (!body) {
         return;
     }
+
+    auto config = Config::GetSingleton();
         
-    auto direction = (pos - obj->GetPosition());
+    auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
     RE::hkVector4 velocityVector(direction);
 
