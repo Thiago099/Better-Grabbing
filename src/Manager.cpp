@@ -7,7 +7,13 @@ RE::bhkRigidBody* GetRigidBody(RE::TESObjectREFR* refr) {
     if (!object3D) {
         return NULL;
     }
-    auto body = object3D->GetCollisionObject()->GetRigidBody();
+    auto collision = object3D->GetCollisionObject();
+
+    if (!collision) {
+        return NULL;
+    }
+
+    auto body = collision->GetRigidBody();
 
     return body;
 }
