@@ -121,8 +121,18 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
                     body->SetLinearVelocity(RE::hkVector4());
                     body->SetAngularVelocity(RE::hkVector4());
                 }
+
+                if (config->DisableCollisionWithItemsWhileGrabbing) {
+                    auto object3D = ref2->Get3D();
+
+                    if (object3D) {
+                        oldCollisionLayer = object3D->GetCollisionLayer();
+                        object3D->SetCollisionLayer(RE::COL_LAYER::kCamera);
+                    }
+                }
             }
-        }
+            }
+     
     } else {
         if (ref) {
             if (auto ref2 = ref.get()) {
@@ -130,6 +140,18 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
                 if (body) {
                     body->SetLinearVelocity({});
                 }
+
+                auto config = Config::GetSingleton();
+
+                if (config->DisableCollisionWithItemsWhileGrabbing) {
+
+                    auto object3D = ref2->Get3D();
+
+                    if (object3D) {
+                        object3D->SetCollisionLayer(oldCollisionLayer);
+                    }
+                }
+
             }
         }
     }

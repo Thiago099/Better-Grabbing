@@ -11,6 +11,7 @@ class Manager {
     float distance = 100.f;
     RE::NiPoint2 angle = {0, 0};
     RE::NiPoint2 position = {0, 0};
+    RE::COL_LAYER oldCollisionLayer;
     inline static Manager* singleton = NULL;
 
     static inline bool doRotate = false;

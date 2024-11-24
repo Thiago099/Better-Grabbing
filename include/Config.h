@@ -37,4 +37,5 @@ public:
     float TranslateZMinDefaultDistance = 100.f;
 
     float DragMovementDamping = 1.0f;
+    bool DisableCollisionWithItemsWhileGrabbing = true;
 };
