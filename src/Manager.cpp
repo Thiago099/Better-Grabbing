@@ -82,6 +82,11 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     RE::hkVector4 velocityVector(direction);
 
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+
+    if (obj->GetPosition().GetSquaredDistance(pos) > 100.f) {
+        SetPosition(obj, pos);
+    }
+
     obj->Update3DPosition(true);
     SKSE::GetTaskInterface()->AddTask([body, velocityVector]() {
         body->SetLinearVelocity(velocityVector);
@@ -99,6 +104,10 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
                 auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
                 auto objectAngle = ref2->GetAngle();
                 angle = {-objectAngle.z + cameraAngle.z, 0};
+
+                if (auto r3d = ref2->Get3D()) {
+                    ref2->Set3D(r3d);
+                }
             }
         }
     }

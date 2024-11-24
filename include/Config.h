@@ -28,9 +28,9 @@ public:
 
     float ButtonRotateXSensitivity = 10;
     float ButtonRotateYSensitivity = 10;
-    float ButtonTranslateXSensitivity = 1;
-    float ButtonTranslateYSensitivity = 1;
-    float ButtonTranslateZSensitivity = 1;
+    float ButtonTranslateXSensitivity = 10;
+    float ButtonTranslateYSensitivity = 10;
+    float ButtonTranslateZSensitivity = 10;
 
     float TranslateZMaxDistance = 1000.0f;
     float TranslateZMinDistance = 60.0f;

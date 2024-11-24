@@ -68,72 +68,52 @@ public:
         input->AddSink("RotateXPlus",
         [this](RE::ButtonEvent* button) { 
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                RotateX(config->ButtonRotateXSensitivity / 360 * M_PI);
-            }
+            RotateX(config->ButtonRotateXSensitivity / 360 * M_PI);
         });
 
         input->AddSink("RotateXMinus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                RotateX(-config->ButtonRotateXSensitivity / 360 * M_PI);
-            }
+            RotateX(-config->ButtonRotateXSensitivity / 360 * M_PI);
         });
 
         input->AddSink("RotateYPlus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                RotateY(-config->ButtonRotateYSensitivity / 360 * M_PI);
-            }
+            RotateY(-config->ButtonRotateYSensitivity / 360 * M_PI);
         });
 
         input->AddSink("RotateYMinus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                RotateY(config->ButtonRotateYSensitivity / 360 * M_PI);
-            }
+            RotateY(config->ButtonRotateYSensitivity / 360 * M_PI);
         });
 
         input->AddSink("TranslateXPlus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateX(config->ButtonTranslateXSensitivity);
-            }
+            TranslateX(config->ButtonTranslateXSensitivity);
         });
 
         input->AddSink("TranslateXMinus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateX(-config->ButtonTranslateXSensitivity);
-            }
+            TranslateX(-config->ButtonTranslateXSensitivity);
         });
 
         input->AddSink("TranslateYPlus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateY(config->ButtonTranslateYSensitivity);
-            }
+            TranslateY(config->ButtonTranslateYSensitivity);
         });
 
         input->AddSink("TranslateYMinus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateY(-config->ButtonTranslateYSensitivity);
-            }
+            TranslateY(-config->ButtonTranslateYSensitivity);
         });
 
         input->AddSink("TranslateZPlus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateZ(config->ButtonTranslateZSensitivity);
-            }
+            TranslateZ(config->ButtonTranslateZSensitivity);
         });
 
         input->AddSink("TranslateZMinus", [this](RE::ButtonEvent* button) {
             auto config = Config::GetSingleton();
-            if (button->IsHeld()) {
-                TranslateZ(-config->ButtonTranslateZSensitivity);
-            }
+            TranslateZ(-config->ButtonTranslateZSensitivity);
         });
     }
     static Manager* GetSingleton() {

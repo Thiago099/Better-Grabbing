@@ -5,20 +5,20 @@
 #include "Config.h"
 
 namespace Hooks {
-    inline bool CapturedSource = false;
+    inline bool OriginalDraggingBehavior = false;
     struct GrabHook {
         static inline bool thunk(RE::ObjectRefHandle* a1, RE::TESObjectREFRPtr* a2) { 
             auto obj = a1->get();
-            CapturedSource = false;
+            OriginalDraggingBehavior = false;
             if (obj) {
                 auto obj2 = obj.get();
                 if (obj2) {
                     if (obj2->As<RE::Actor>()) {
+                        OriginalDraggingBehavior = true;
                         return originalFunction(a1, a2);
                     } else {
                         auto manager = Manager::GetSingleton();
                         manager->UpdatePosition(obj2);
-                        CapturedSource = true;
                     }
                 }
             }
@@ -37,7 +37,7 @@ namespace Hooks {
     };
     struct GrabHook2 {
         static inline int64_t thunk(RE::PlayerCharacter* a1) {
-            if (!CapturedSource) {
+            if (OriginalDraggingBehavior) {
                 return originalFunction(a1);
             }
             return false;
