@@ -46,49 +46,18 @@ RE::NiObject* GetPlayer3d() {
 }
 
 
-
-RE::NiPoint3 GetAngleDistance(const RE::NiPoint3& angle1, const RE::NiPoint3& angle2) {
-    auto diff = angle2 - angle1;
-
-    auto distance = angle1.GetSquaredDistance(angle2);
-
-    if (distance < 1e-3) {
-        return {0, 0, 0};
-    }
-
-  // logger::trace("distance: {}{}{}", diff.x, diff.y, diff.z);
-
-    constexpr float pi = glm::pi<float>();
-    diff.x = glm::mod(diff.x + pi, 2.0f * pi) - pi;
-    diff.y = glm::mod(diff.y + pi, 2.0f * pi) - pi;
-    diff.z = glm::mod(diff.z + pi, 2.0f * pi) - pi;
-
-    //if (diff.x < 0.01f) {
-    //    diff.x = 0;
-    //}
-    //if (diff.y < 0.01f) {
-    //    diff.y = 0;
-    //}
-    //if (diff.z < 0.01f) {
-    //    diff.x = 0;
-    //}
-
-    return diff;
-}
-
-RE::hkVector4 vecOld;
-
 void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition) {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
     auto yoffsetRotation = angle.y;
     auto xoffsetRoation = angle.x;
 
-    auto c = glm::rotate(glm::mat4(1.0f), -cameraAngle.z, glm::vec3(1.0f, 0.0f, 0.0f));
-    auto b = glm::rotate(glm::mat4(1.0f), yoffsetRotation, glm::vec3(0.0f, 0.0f, 1.0f));
     auto a = glm::rotate(glm::mat4(1.0f), xoffsetRoation, glm::vec3(1.0f, 0.0f, 0.0f));
+    auto b = glm::rotate(glm::mat4(1.0f), yoffsetRotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    auto c = glm::rotate(glm::mat4(1.0f), -cameraAngle.z, glm::vec3(1.0f, 0.0f, 0.0f));
 
     auto rotationMatrix = a * b * c;
+
 
     float newYaw = atan2(rotationMatrix[1][0], rotationMatrix[0][0]);
     float newPitch = asin(-rotationMatrix[2][0]);
@@ -106,23 +75,15 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
         return;
     }
         
-    auto direction = (pos - obj->GetPosition())*0.5;
-    auto angle = GetAngleDistance(RE::NiPoint3(newYaw, newPitch, newRoll), obj->GetAngle()) * 20.f;
+    auto direction = (pos - obj->GetPosition());
 
     RE::hkVector4 velocityVector(direction);
-    RE::hkVector4 angleVector(angle);
 
-    RE::hkVector4 vec;
-    body->GetPosition(vec);
-
-    if (!vec.IsEqual(vecOld, 1000.f)) {
-        logger::trace("vector changed");
-    }
-
-    vecOld = vec;
-
-    body->SetLinearVelocity(velocityVector);
-    body->SetAngularVelocity(angleVector);
+    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+    obj->Update3DPosition(true);
+    SKSE::GetTaskInterface()->AddTask([body, velocityVector]() {
+        body->SetLinearVelocity(velocityVector);
+    });
 }
 
 void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
