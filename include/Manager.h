@@ -8,7 +8,8 @@
 
 class Manager {
     bool isGrabbing = false;
-    float distance = 100.f;
+    float fistPersonDistance = 100.f;
+    float thirdPersonDistance = 500.f;
     RE::NiPoint2 angle = {0, 0};
     RE::NiPoint2 position = {0, 0};
     RE::COL_LAYER oldCollisionLayer;
@@ -144,18 +145,39 @@ public:
         position.y += y;
     }
     void TranslateZ(float value) {
-        auto candidate = distance + value;
-        auto config = Config::GetSingleton();
+        RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
 
-        if (candidate < config->TranslateZMinDistance) {
-            candidate = config->TranslateZMinDistance;
+        if (camera->currentState.get()->id == RE::CameraState::kThirdPerson) {
+
+            auto candidate = thirdPersonDistance + value;
+            auto config = Config::GetSingleton();
+
+            if (candidate < config->TranslateZMinDistance) {
+                candidate = config->TranslateZMinDistance;
+            }
+
+            if (candidate > config->TranslateZMaxDistance) {
+                candidate = config->TranslateZMaxDistance;
+            }
+
+            thirdPersonDistance = candidate;
+
+        } else {
+            
+            auto candidate = fistPersonDistance + value;
+            auto config = Config::GetSingleton();
+
+            if (candidate < config->TranslateZMinDistance) {
+                candidate = config->TranslateZMinDistance;
+            }
+
+            if (candidate > config->TranslateZMaxDistance) {
+                candidate = config->TranslateZMaxDistance;
+            }
+
+            fistPersonDistance = candidate;
         }
 
-        if (candidate > config->TranslateZMaxDistance) {
-            candidate = config->TranslateZMaxDistance;
-        }
-
-        distance = candidate;
     }
     bool GetIsGrabbing() {
         return isGrabbing;

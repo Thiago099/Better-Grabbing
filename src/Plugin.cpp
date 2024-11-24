@@ -5,7 +5,8 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
         auto script = RE::ScriptEventSourceHolder::GetSingleton();
         script->AddEventSink(new GrabEventHandler());
     }
-    if (message->type == SKSE::MessagingInterface::kPostLoad) {
+    if (message->type == SKSE::MessagingInterface::kPostLoad || message->type == SKSE::MessagingInterface::kNewGame) {
+        Manager::GetSingleton()->SetGrabbing(false, nullptr);
     }
 }
 

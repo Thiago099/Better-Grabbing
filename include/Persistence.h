@@ -39,6 +39,7 @@ namespace Persistence {
         config->TranslateZMinDefaultDistance = ini->GetFloat("TranslateZMinDefaultDistance", config->TranslateZMinDefaultDistance);
         config->DragMovementDamping = ini->GetFloat("DragMovementDamping", config->DragMovementDamping);
         config->DisableCollisionWithItemsWhileGrabbing = ini->GetBool("DisableCollisionWithItemsWhileGrabbing", config->DisableCollisionWithItemsWhileGrabbing);
+        config->TranslateZMinDefaultThirdPersonDistance = ini->GetFloat("TranslateZMinDefaultThirdPersonDistance", config->TranslateZMinDefaultThirdPersonDistance);
 
 
 	}

@@ -107,7 +107,8 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
     if (value) {
         auto config = Config::GetSingleton();
         angle = {0, 0};
-        distance = config->TranslateZMinDefaultDistance;
+        fistPersonDistance = config->TranslateZMinDefaultDistance;
+        thirdPersonDistance = config->TranslateZMinDefaultThirdPersonDistance;
         position = {0, 0};
         if (ref) {
             if (auto ref2 = ref.get()) {
@@ -159,7 +160,16 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) {
-    auto rayMaxDistance = distance;
+    auto rayMaxDistance = 0;
+
+    RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+    
+    if (camera->currentState.get()->id == RE::CameraState::kThirdPerson) {
+        rayMaxDistance = thirdPersonDistance;
+    } else {
+        rayMaxDistance = fistPersonDistance;
+    }
+
     SKSE::GetTaskInterface()->AddTask([this, obj, rayMaxDistance]() {
         auto player3d = GetPlayer3d();
 
