@@ -63,41 +63,45 @@ namespace Hooks {
                     return true;
                 }
             }
-            if (auto move = event->AsMouseMoveEvent()) {
-                bool block = false;
-                if (manager->GetDoRotate()) {
-                    Manager::GetSingleton()->RotateX(move->mouseInputX * config->MouseRotateXSensitivity);
-                    Manager::GetSingleton()->RotateY(move->mouseInputY * config->MouseRotateYSensitivity);
-                    block = true;
+            if (event->device == RE::INPUT_DEVICE::kMouse){
+                if (auto move = event->AsMouseMoveEvent()) {
+                    bool block = false;
+                    if (manager->GetDoRotate()) {
+                        Manager::GetSingleton()->RotateX(move->mouseInputX * config->MouseRotateXSensitivity);
+                        Manager::GetSingleton()->RotateY(move->mouseInputY * config->MouseRotateYSensitivity);
+                        block = true;
+                    }
+                    if (manager->GetTranslateZ()) {
+                        Manager::GetSingleton()->TranslateZ(-move->mouseInputY * config->MouseTranslateZSensitivity);
+                        block = true;
+                    }
+                    if (manager->GetDoTranslate()) {
+                        Manager::GetSingleton()->TranslateX(move->mouseInputX * config->MouseTranslateXSensitivity);
+                        Manager::GetSingleton()->TranslateY(-move->mouseInputY * config->MouseTranslateYSensitivity);
+                        block = true;
+                    }
+                    return block;
+                } 
+            }
+            if (event->device == RE::INPUT_DEVICE::kGamepad) {
+                if (auto move = event->AsThumbstickEvent()) {
+                    bool block = false;
+                    if (manager->GetDoRotate()) {
+                        Manager::GetSingleton()->RotateX(move->xValue * config->GamepadRotateXSensitivity);
+                        Manager::GetSingleton()->RotateY(-move->yValue * config->GamepadRotateYSensitivity);
+                        block = true;
+                    }
+                    if (manager->GetTranslateZ()) {
+                        Manager::GetSingleton()->TranslateZ(move->yValue * config->GamepadTranslateZSensitivity);
+                        block = true;
+                    }
+                    if (manager->GetDoTranslate()) {
+                        Manager::GetSingleton()->TranslateX(move->xValue * config->GamepadTranslateXSensitivity);
+                        Manager::GetSingleton()->TranslateY(move->yValue * config->GamepadTranslateYSensitivity);
+                        block = true;
+                    }
+                    return block;
                 }
-                if (manager->GetTranslateZ()) {
-                    Manager::GetSingleton()->TranslateZ(-move->mouseInputY * config->MouseTranslateZSensitivity);
-                    block = true;
-                }
-                if (manager->GetDoTranslate()) {
-                    Manager::GetSingleton()->TranslateX(move->mouseInputX * config->MouseTranslateXSensitivity);
-                    Manager::GetSingleton()->TranslateY(-move->mouseInputY * config->MouseTranslateYSensitivity);
-                    block = true;
-                }
-                return block;
-            } 
-            if (auto move = event->AsThumbstickEvent()) {
-                bool block = false;
-                if (manager->GetDoRotate()) {
-                    Manager::GetSingleton()->RotateX(move->xValue * config->GamepadRotateXSensitivity);
-                    Manager::GetSingleton()->RotateY(-move->yValue * config->GamepadRotateYSensitivity);
-                    block = true;
-                }
-                if (manager->GetTranslateZ()) {
-                    Manager::GetSingleton()->TranslateZ(move->yValue * config->GamepadTranslateZSensitivity);
-                    block = true;
-                }
-                if (manager->GetDoTranslate()) {
-                    Manager::GetSingleton()->TranslateX(move->xValue * config->GamepadTranslateXSensitivity);
-                    Manager::GetSingleton()->TranslateY(move->yValue * config->GamepadTranslateYSensitivity);
-                    block = true;
-                }
-                return block;
             }
 
             return false;
