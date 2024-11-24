@@ -81,16 +81,16 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     RE::hkVector4 velocityVector(direction);
 
 
-    RE::hkVector4 p;
-    body->GetPosition(p);
+    RE::hkVector4 havockPosition;
+    body->GetPosition(havockPosition);
     float components[4];
-    _mm_store_ps(components, p.quad);
-    RE::NiPoint3 pc = {components[0], components[1], components[2]};
+    _mm_store_ps(components, havockPosition.quad);
+    RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
     constexpr auto havockToSkyrimConversionRate = 69.9915;
-    pc *= havockToSkyrimConversionRate;
+    newPosition *= havockToSkyrimConversionRate;
 
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-    SetPosition(obj, pc);
+    SetPosition(obj, newPosition);
     obj->Update3DPosition(true);
     body->SetLinearVelocity(velocityVector);
 
