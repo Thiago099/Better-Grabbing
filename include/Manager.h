@@ -5,6 +5,7 @@
 
 #define M_PI 3.14159265358979323846f
 
+
 class Manager {
     bool isGrabbing = false;
     float distance = 100.f;
@@ -17,6 +18,8 @@ class Manager {
     static inline bool doTranslateZ = false;
 
     void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition);
+    float NormalizeAngle(float angle);
+
 public:
 
     bool GetDoRotate() {
@@ -124,10 +127,14 @@ public:
     }
     void SetGrabbing(bool value, RE::TESObjectREFRPtr ref);
     void RotateX(float x) {
-        angle.x += x;
+        if (glm::abs(angle.y) > glm::half_pi<float>()) {
+            angle.x = NormalizeAngle(angle.x - x);
+        } else {
+            angle.x = NormalizeAngle(angle.x + x);
+        }
     }
     void RotateY(float y) {
-        angle.y += y;
+        angle.y = NormalizeAngle(angle.y + y);
     }
     void TranslateX(float x) {
         position.x += x;

@@ -97,6 +97,12 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
 
 }
 
+float Manager::NormalizeAngle(float angle) {
+    angle = glm::mod(angle + glm::pi<float>(), glm::two_pi<float>());
+    if (angle < 0.0f) angle += glm::two_pi<float>();
+    return angle - glm::pi<float>();
+}
+
 void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
     if (value) {
         auto config = Config::GetSingleton();
