@@ -58,7 +58,6 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
 
     auto rotationMatrix = a * b * c;
 
-
     float newYaw = atan2(rotationMatrix[1][0], rotationMatrix[0][0]);
     float newPitch = asin(-rotationMatrix[2][0]);
     float newRoll = atan2(rotationMatrix[2][1], rotationMatrix[2][2]);
@@ -76,21 +75,26 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
     }
 
     auto config = Config::GetSingleton();
-        
+
     auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
     RE::hkVector4 velocityVector(direction);
 
+
+    RE::hkVector4 p;
+    body->GetPosition(p);
+    float components[4];
+    _mm_store_ps(components, p.quad);
+    RE::NiPoint3 pc = {components[0], components[1], components[2]};
+    constexpr auto havockToSkyrimConversionRate = 69.9915;
+    pc *= havockToSkyrimConversionRate;
+
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-
-    if (obj->GetPosition().GetSquaredDistance(pos) > 100.f) {
-        SetPosition(obj, pos);
-    }
-
+    SetPosition(obj, pc);
     obj->Update3DPosition(true);
-    SKSE::GetTaskInterface()->AddTask([body, velocityVector]() {
-        body->SetLinearVelocity(velocityVector);
-    });
+    body->SetLinearVelocity(velocityVector);
+
+
 }
 
 void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
@@ -105,8 +109,20 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
                 auto objectAngle = ref2->GetAngle();
                 angle = {-objectAngle.z + cameraAngle.z, 0};
 
-                if (auto r3d = ref2->Get3D()) {
-                    ref2->Set3D(r3d);
+
+                auto body = GetRigidBody(ref2);
+                if (body) {
+                    body->SetLinearVelocity(RE::hkVector4());
+                    body->SetAngularVelocity(RE::hkVector4());
+                }
+            }
+        }
+    } else {
+        if (ref) {
+            if (auto ref2 = ref.get()) {
+                auto body = GetRigidBody(ref2);
+                if (body) {
+                    body->SetLinearVelocity({});
                 }
             }
         }
