@@ -115,6 +115,12 @@ namespace Hooks {
                 return;
             }
 
+            auto ui = RE::UI::GetSingleton();
+            if (ui->IsApplicationMenuOpen() || ui->IsItemMenuOpen() || ui->IsModalMenuOpen() || ui->GameIsPaused()) {
+                originalFunction(a_dispatcher, a_event);
+                return;
+            }
+
             auto first = *a_event;
             auto last = *a_event;
             size_t length = 0;
