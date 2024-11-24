@@ -16,21 +16,7 @@ public:
         }
         return singleton;
     }
-    void SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
-        if (value) {
-            angle = {0, 0};
-            distance = 100.f;
-            position = {0, 0};
-            if (ref) {
-                if (auto ref2 = ref.get()) {
-                    auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
-                    auto objectAngle = ref2->GetAngle();
-                    angle = {-objectAngle.z + cameraAngle.z, 0};
-                }
-            }
-        }
-        isGrabbing = value;
-    }
+    void SetGrabbing(bool value, RE::TESObjectREFRPtr ref);
     void RotateX(float x) {
         angle.x += x;
     }
