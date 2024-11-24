@@ -2,14 +2,13 @@ set(HEADER_FILES
 	include/PCH.h
 	include/logger.h
 	include/Plugin.h
-	include/SKSEMenuFramework.h
 	include/Events.h
 	include/HookBuilder.h
 	include/Hooks.h
-	include/UI.h
 	include/Raycast.h
 	include/RayCollector.h
 	include/Manager.h
 	include/InputManager.h
 	include/Ini.h
+	include/Config.h
 )

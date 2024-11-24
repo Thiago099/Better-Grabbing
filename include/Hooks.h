@@ -2,7 +2,7 @@
 #include "HookBuilder.h"
 #include "Manager.h"
 #include "InputManager.h"
-
+#include "Config.h"
 
 namespace Hooks {
     inline bool CapturedSource = false;
@@ -57,6 +57,7 @@ namespace Hooks {
         static inline bool InputEvent(RE::InputEvent* event) {
 
             auto manager = Manager::GetSingleton();
+            auto config = Config::GetSingleton();
             if (auto button = event->AsButtonEvent()) {
                 if (InputManager::GetSingleton()->ProcessInput(button)) {
                     return true;
@@ -65,17 +66,17 @@ namespace Hooks {
             if (auto move = event->AsMouseMoveEvent()) {
                 bool block = false;
                 if (manager->GetDoRotate()) {
-                    Manager::GetSingleton()->RotateX(move->mouseInputX * 0.005);
-                    Manager::GetSingleton()->RotateY(move->mouseInputY * 0.005);
+                    Manager::GetSingleton()->RotateX(move->mouseInputX * config->MouseRotateXSensitivity);
+                    Manager::GetSingleton()->RotateY(move->mouseInputY * config->MouseRotateYSensitivity);
                     block = true;
                 }
                 if (manager->GetTranslateZ()) {
-                    Manager::GetSingleton()->IncrementDistance(-move->mouseInputY * 0.05);
+                    Manager::GetSingleton()->TranslateZ(-move->mouseInputY * config->MouseTranslateZSensitivity);
                     block = true;
                 }
                 if (manager->GetDoTranslate()) {
-                    Manager::GetSingleton()->TranslateX(move->mouseInputX * 0.05);
-                    Manager::GetSingleton()->TranslateY(-move->mouseInputY * 0.05);
+                    Manager::GetSingleton()->TranslateX(move->mouseInputX * config->MouseTranslateXSensitivity);
+                    Manager::GetSingleton()->TranslateY(-move->mouseInputY * config->MouseTranslateYSensitivity);
                     block = true;
                 }
                 return block;
@@ -83,17 +84,17 @@ namespace Hooks {
             if (auto move = event->AsThumbstickEvent()) {
                 bool block = false;
                 if (manager->GetDoRotate()) {
-                    Manager::GetSingleton()->RotateX(move->xValue * 0.1);
-                    Manager::GetSingleton()->RotateY(move->yValue * 0.1);
+                    Manager::GetSingleton()->RotateX(move->xValue * config->GamepadRotateXSensitivity);
+                    Manager::GetSingleton()->RotateY(-move->yValue * config->GamepadRotateYSensitivity);
                     block = true;
                 }
                 if (manager->GetTranslateZ()) {
-                    Manager::GetSingleton()->IncrementDistance(move->yValue * 1.f);
+                    Manager::GetSingleton()->TranslateZ(move->yValue * config->GamepadTranslateZSensitivity);
                     block = true;
                 }
                 if (manager->GetDoTranslate()) {
-                    Manager::GetSingleton()->TranslateX(move->xValue * 0.1);
-                    Manager::GetSingleton()->TranslateY(move->yValue * 0.1);
+                    Manager::GetSingleton()->TranslateX(move->xValue * config->GamepadTranslateXSensitivity);
+                    Manager::GetSingleton()->TranslateY(move->yValue * config->GamepadTranslateYSensitivity);
                     block = true;
                 }
                 return block;

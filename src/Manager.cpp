@@ -88,8 +88,9 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
 
 void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
     if (value) {
+        auto config = Config::GetSingleton();
         angle = {0, 0};
-        distance = 100.f;
+        distance = config->TranslateZMinDefaultDistance;
         position = {0, 0};
         if (ref) {
             if (auto ref2 = ref.get()) {

@@ -1,6 +1,9 @@
 #pragma once
 #include "Raycast.h"
 #include "InputManager.h"
+#include "Config.h"
+
+#define M_PI 3.14159265358979323846f
 
 class Manager {
     bool isGrabbing = false;
@@ -14,10 +17,6 @@ class Manager {
     static inline bool doTranslateZ = false;
 
     void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition);
-
-    void EnableRotate(RE::ButtonEvent* button) {
-    }
-
 public:
 
     bool GetDoRotate() {
@@ -59,27 +58,81 @@ public:
         });
 
         input->AddSink("MoveObjectCloser", [](RE::ButtonEvent* button) {
-            Manager::GetSingleton()->IncrementDistance(3.f);
+            Manager::GetSingleton()->TranslateZ(3.f);
         });
 
         input->AddSink("MoveObjectFruther", [](RE::ButtonEvent* button) {
-            Manager::GetSingleton()->IncrementDistance(-3.f);
+            Manager::GetSingleton()->TranslateZ(-3.f);
         });
 
         input->AddSink("RotateXPlus",
         [this](RE::ButtonEvent* button) { 
+            auto config = Config::GetSingleton();
             if (button->IsHeld()) {
-                angle.x += 10.f;
+                RotateX(config->ButtonRotateXSensitivity / 360 * M_PI);
             }
         });
+
         input->AddSink("RotateXMinus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
             if (button->IsHeld()) {
-                angle.x -= 10.f;
+                RotateX(-config->ButtonRotateXSensitivity / 360 * M_PI);
             }
         });
-        input->AddSink("RotateXPlus", [this](RE::ButtonEvent* button) {
+
+        input->AddSink("RotateYPlus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
             if (button->IsHeld()) {
-                angle.x += 10.f;
+                RotateY(-config->ButtonRotateYSensitivity / 360 * M_PI);
+            }
+        });
+
+        input->AddSink("RotateYMinus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                RotateY(config->ButtonRotateYSensitivity / 360 * M_PI);
+            }
+        });
+
+        input->AddSink("TranslateXPlus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateX(config->ButtonTranslateXSensitivity);
+            }
+        });
+
+        input->AddSink("TranslateXMinus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateX(-config->ButtonTranslateXSensitivity);
+            }
+        });
+
+        input->AddSink("TranslateYPlus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateY(config->ButtonTranslateYSensitivity);
+            }
+        });
+
+        input->AddSink("TranslateYMinus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateY(-config->ButtonTranslateYSensitivity);
+            }
+        });
+
+        input->AddSink("TranslateZPlus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateZ(config->ButtonTranslateZSensitivity);
+            }
+        });
+
+        input->AddSink("TranslateZMinus", [this](RE::ButtonEvent* button) {
+            auto config = Config::GetSingleton();
+            if (button->IsHeld()) {
+                TranslateZ(-config->ButtonTranslateZSensitivity);
             }
         });
     }
@@ -102,15 +155,16 @@ public:
     void TranslateY(float y) {
         position.y += y;
     }
-    void IncrementDistance(float value) {
+    void TranslateZ(float value) {
         auto candidate = distance + value;
+        auto config = Config::GetSingleton();
 
-        if (candidate < 10.f) {
-            candidate = 10.f;
+        if (candidate < config->TranslateZMinDistance) {
+            candidate = config->TranslateZMinDistance;
         }
 
-        if (candidate > 1000.f) {
-            candidate = 1000.f;
+        if (candidate > config->TranslateZMaxDistance) {
+            candidate = config->TranslateZMaxDistance;
         }
 
         distance = candidate;
