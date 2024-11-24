@@ -1,8 +1,3 @@
-
-# This makes norton happy again
-
-set(CMAKE_C_COMPILER ${CCOMPILER_PATH})
-
 # ---------------------------------------------------- #
 #                 Required envs assert                 #
 # ---------------------------------------------------- #
