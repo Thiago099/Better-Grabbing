@@ -5,4 +5,6 @@ set(SOURCE_FILES
 	src/Raycast.cpp
 	src/RayCollector.cpp
 	src/Manager.cpp
+	src/InputManager.cpp
+	src/Ini.cpp
 )

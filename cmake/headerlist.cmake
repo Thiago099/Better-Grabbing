@@ -10,4 +10,6 @@ set(HEADER_FILES
 	include/Raycast.h
 	include/RayCollector.h
 	include/Manager.h
+	include/InputManager.h
+	include/Ini.h
 )
