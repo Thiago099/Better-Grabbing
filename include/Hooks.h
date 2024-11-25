@@ -110,7 +110,14 @@ namespace Hooks {
             return false;
         }
         static void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_event) {
-            if (const auto manager = Manager::GetSingleton(); !manager->GetIsGrabbing()) {
+            auto manager = Manager::GetSingleton();
+            auto player = RE::PlayerCharacter::GetSingleton();
+
+            if (player->GetGrabbedRef() == nullptr) {
+                manager->SetGrabbing(false, nullptr);
+            }
+
+            if (!manager->GetIsGrabbing()) {
                 originalFunction(a_dispatcher, a_event);
                 return;
             }
