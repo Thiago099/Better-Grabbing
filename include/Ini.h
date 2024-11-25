@@ -44,7 +44,7 @@ namespace Ini {
             return result;
         }
         void Write(const std::string& fileName) {
-            const fs::path appPath = std::filesystem::current_path() / "Data" / fileName;
+            const fs::path appPath = std::filesystem::current_path() / "Data" / "SKSE" / "Plugins" / fileName;
             fs::create_directories(appPath.parent_path());
 
             logger::trace("write file start {}", appPath.string().c_str());
@@ -75,7 +75,7 @@ namespace Ini {
     public:
         IniReader(const char* filaname) {
             _ini.SetUnicode();
-            opened = _ini.LoadFile(("Data/" + std::string(filaname)).c_str()) >= 0;
+            opened = _ini.LoadFile(("Data/SKSE/Plugins/" + std::string(filaname)).c_str()) >= 0;
         }
 
         void GetKeyPair(const char* section, std::function<void(const char*, const char*)> const& fn) const;

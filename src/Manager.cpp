@@ -118,6 +118,11 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         fistPersonDistance = config->TranslateZMinDefaultDistance;
         thirdPersonDistance = config->TranslateZMinDefaultThirdPersonDistance;
         position = {0, 0};
+
+        doRotate = false;
+        doTranslate = false;
+        doTranslateZ = false;
+
         if (ref) {
             if (const auto ref2 = ref.get()) {
                 if (ref2->As<RE::Actor>()) {
