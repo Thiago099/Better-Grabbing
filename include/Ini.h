@@ -78,7 +78,7 @@ namespace Ini {
             opened = _ini.LoadFile(("Data/" + std::string(filaname)).c_str()) >= 0;
         }
 
-        void GetKeyPair(const char* section, std::function<void(const char*, const char*)> const& fn);
+        void GetKeyPair(const char* section, std::function<void(const char*, const char*)> const& fn) const;
         void SetSection(const char* section) { _section = section; }
         const char* GetString(const char* key, const char* def = "") const { return _ini.GetValue(_section, key, def); }
         float GetFloat(const char* key, const float def = 0.0f) const {

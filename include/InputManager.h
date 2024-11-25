@@ -5,7 +5,7 @@ class InputManager {
     std::map<uint32_t, std::map<uint32_t, std::vector<uint32_t>>> inputs;
     uint32_t auto_increment = 0;
     std::map<std::string, uint32_t> idMap;
-    uint32_t GetId(std::string key);
+    uint32_t GetId(const std::string& key);
     static inline InputManager* singleton = nullptr;
 public:
     static InputManager* GetSingleton() {
