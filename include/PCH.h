@@ -12,3 +12,5 @@ using FormID = RE::FormID;
 using RefID = RE::FormID;
 
 constexpr RefID player_refid = 20;
+
+const bool is_grab_n_throw_installed = std::filesystem::exists("Data/SKSE/Plugins/po3_GrabAndThrow.dll");

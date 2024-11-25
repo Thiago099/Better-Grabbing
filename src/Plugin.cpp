@@ -12,10 +12,11 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 
 SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SKSE::Init(skse);
-    SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     SetupLog();
+    SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     logger::info("Plugin loaded");
     Hooks::Install();
     Persistence::LoadConfiguration();
+	logger::info("Grab and Throw is {}", is_grab_n_throw_installed ? "installed" : "not installed" );
     return true;
 }

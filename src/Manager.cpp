@@ -139,7 +139,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                     }
                 }
             }
-            }
+        }
      
     } else {
         if (ref) {
@@ -149,9 +149,11 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                     return;
                 }
 
-                if (const auto body = GetRigidBody(ref2)) {
-                    body->SetLinearVelocity({});
-                }
+				if (reset_velocity.load()) {
+                    if (const auto body = GetRigidBody(ref2)) {
+                        body->SetLinearVelocity({});
+                    }
+				}
 
                 if (const auto config = Config::GetSingleton(); config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
@@ -163,6 +165,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         }
     }
     isGrabbing = value;
+	reset_velocity.store(true);
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {

@@ -25,6 +25,9 @@ class Manager {
     static float NormalizeAngle(float angle);
 
 public:
+
+	std::atomic<bool> reset_velocity = true;
+
     static bool GetDoRotate() {
         return doRotate;
     }

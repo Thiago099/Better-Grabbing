@@ -60,7 +60,6 @@ namespace Hooks {
 
         static bool InputEvent(RE::InputEvent* event) {
 
-            const auto manager = Manager::GetSingleton();
             const auto config = Config::GetSingleton();
             if (const auto button = event->AsButtonEvent()) {
                 if (InputManager::GetSingleton()->ProcessInput(button)) {
@@ -120,6 +119,21 @@ namespace Hooks {
             if (ui->IsApplicationMenuOpen() || ui->IsItemMenuOpen() || ui->IsModalMenuOpen() || ui->GameIsPaused()) {
                 originalFunction(a_dispatcher, a_event);
                 return;
+            }
+            if (is_grab_n_throw_installed && a_event && *a_event) {
+                if (const auto button = (*a_event)->AsButtonEvent(); button && button->IsUp()) {
+					const auto device = button->GetDevice();
+				    if (device == RE::INPUT_DEVICE::kKeyboard || device == RE::INPUT_DEVICE::kGamepad) {
+            	        const auto controlMap = RE::ControlMap::GetSingleton();
+				        const auto userEvents = RE::UserEvents::GetSingleton();
+                        const auto readyweap_button = controlMap->GetMappedKey(userEvents->readyWeapon, device,
+                                                       RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
+					    if (button->GetIDCode() == readyweap_button) {
+							Manager::GetSingleton()->reset_velocity.store(false);
+						    return originalFunction(a_dispatcher, a_event);
+					    }
+                    }
+                }
             }
 
             auto first = *a_event;
