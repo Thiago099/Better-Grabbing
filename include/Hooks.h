@@ -38,7 +38,7 @@ namespace Hooks {
         }
     };
     struct GrabHook2 {
-        static inline int64_t thunk(RE::PlayerCharacter* a1) {
+        static int64_t thunk(RE::PlayerCharacter* a1) {
             const auto manager = Manager::GetSingleton();
             if (OriginalDraggingBehavior || !manager->GetIsGrabbing()) {
                 manager->SetGrabbing(false, nullptr);
@@ -47,7 +47,7 @@ namespace Hooks {
             return false;
         }
         static inline REL::Relocation<decltype(thunk)> originalFunction;
-        inline static void Install(HookBuilder* builder) {
+        static void Install(HookBuilder* builder) {
             //SE ID: 39479 SE Offset: 0xb85 (Heuristic)
             //AE ID: 40556 AE Offset: 0xaf0
             builder->AddCall<GrabHook2, 5, 14>(39479, 0xb85, 40556, 0xaf0);
@@ -58,7 +58,7 @@ namespace Hooks {
 
 
 
-        static inline bool InputEvent(RE::InputEvent* event) {
+        static bool InputEvent(RE::InputEvent* event) {
 
             const auto manager = Manager::GetSingleton();
             const auto config = Config::GetSingleton();
@@ -70,16 +70,16 @@ namespace Hooks {
             if (event->device == RE::INPUT_DEVICE::kMouse){
                 if (const auto move = event->AsMouseMoveEvent()) {
                     bool block = false;
-                    if (manager->GetDoRotate()) {
+                    if (Manager::GetDoRotate()) {
                         Manager::GetSingleton()->RotateX(move->mouseInputX * config->MouseRotateXSensitivity);
                         Manager::GetSingleton()->RotateY(move->mouseInputY * config->MouseRotateYSensitivity);
                         block = true;
                     }
-                    if (manager->GetTranslateZ()) {
+                    if (Manager::GetTranslateZ()) {
                         Manager::GetSingleton()->TranslateZ(-move->mouseInputY * config->MouseTranslateZSensitivity);
                         block = true;
                     }
-                    if (manager->GetDoTranslate()) {
+                    if (Manager::GetDoTranslate()) {
                         Manager::GetSingleton()->TranslateX(move->mouseInputX * config->MouseTranslateXSensitivity);
                         Manager::GetSingleton()->TranslateY(-move->mouseInputY * config->MouseTranslateYSensitivity);
                         block = true;
@@ -90,16 +90,16 @@ namespace Hooks {
             if (event->device == RE::INPUT_DEVICE::kGamepad) {
                 if (const auto move = event->AsThumbstickEvent()) {
                     bool block = false;
-                    if (manager->GetDoRotate()) {
+                    if (Manager::GetDoRotate()) {
                         Manager::GetSingleton()->RotateX(move->xValue * config->GamepadRotateXSensitivity);
                         Manager::GetSingleton()->RotateY(-move->yValue * config->GamepadRotateYSensitivity);
                         block = true;
                     }
-                    if (manager->GetTranslateZ()) {
+                    if (Manager::GetTranslateZ()) {
                         Manager::GetSingleton()->TranslateZ(move->yValue * config->GamepadTranslateZSensitivity);
                         block = true;
                     }
-                    if (manager->GetDoTranslate()) {
+                    if (Manager::GetDoTranslate()) {
                         Manager::GetSingleton()->TranslateX(move->xValue * config->GamepadTranslateXSensitivity);
                         Manager::GetSingleton()->TranslateY(move->yValue * config->GamepadTranslateYSensitivity);
                         block = true;
@@ -110,7 +110,7 @@ namespace Hooks {
 
             return false;
         }
-        static inline void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_event) {
+        static void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_event) {
 
             const auto manager = Manager::GetSingleton();
 
@@ -157,7 +157,8 @@ namespace Hooks {
 
         }
         static inline REL::Relocation<decltype(thunk)> originalFunction;
-        inline static void Install(HookBuilder* builder) {
+
+        static void Install(HookBuilder* builder) {
             builder->AddCall<ProcessInputQueueHook, 5, 14>(
                 67315, 0x7B, 
                 68617, 0x7B//,
