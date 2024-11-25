@@ -118,6 +118,10 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
         position = {0, 0};
         if (ref) {
             if (auto ref2 = ref.get()) {
+
+                if (ref2->As<RE::Actor>()) {
+                    return;
+                }
                 auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
                 auto objectAngle = ref2->GetAngle();
                 angle = {-objectAngle.z + cameraAngle.z, 0};
@@ -143,6 +147,11 @@ void Manager::SetGrabbing(bool value, RE::TESObjectREFRPtr ref) {
     } else {
         if (ref) {
             if (auto ref2 = ref.get()) {
+
+                if (ref2->As<RE::Actor>()) {
+                    return;
+                }
+
                 auto body = GetRigidBody(ref2);
                 if (body) {
                     body->SetLinearVelocity({});

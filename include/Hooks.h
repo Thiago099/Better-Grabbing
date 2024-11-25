@@ -18,6 +18,9 @@ namespace Hooks {
                         return originalFunction(a1, a2);
                     } else {
                         auto manager = Manager::GetSingleton();
+                        if (!manager->GetIsGrabbing()) {
+                            manager->SetGrabbing(true, obj);
+                        }
                         manager->UpdatePosition(obj2);
                     }
                 }
@@ -37,7 +40,9 @@ namespace Hooks {
     };
     struct GrabHook2 {
         static inline int64_t thunk(RE::PlayerCharacter* a1) {
-            if (OriginalDraggingBehavior) {
+            auto manager = Manager::GetSingleton();
+            if (OriginalDraggingBehavior || !manager->GetIsGrabbing()) {
+                manager->SetGrabbing(false, nullptr);
                 return originalFunction(a1);
             }
             return false;
