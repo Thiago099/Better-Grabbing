@@ -83,18 +83,18 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
 
     const auto config = Config::GetSingleton();
 
-    if (config->EnablePhysicalBasedMovement) {
-        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
+    auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-        RE::hkVector4 velocityVector(direction);
+    RE::hkVector4 velocityVector(direction);
 
-        RE::hkVector4 havockPosition;
-        body->GetPosition(havockPosition);
-        float components[4];
-        _mm_store_ps(components, havockPosition.quad);
-        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-        constexpr auto havockToSkyrimConversionRate = 69.9915f;
-        newPosition *= havockToSkyrimConversionRate;
+
+    RE::hkVector4 havockPosition;
+    body->GetPosition(havockPosition);
+    float components[4];
+    _mm_store_ps(components, havockPosition.quad);
+    RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
+    constexpr auto havockToSkyrimConversionRate = 69.9915;
+    newPosition *= havockToSkyrimConversionRate;
 
         SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
         SetPosition(obj, newPosition);
@@ -105,6 +105,10 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
         SetPosition(obj, pos);
         obj->Update3DPosition(true);
     }
+
+
+
+
 }
 
 float Manager::NormalizeAngle(float angle) {
@@ -152,7 +156,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                     return;
                 }
 
-				if (resetVelocityOnGrabEnd.load()) {
+				if (reset_velocity.load()) {
                     if (const auto body = GetRigidBody(ref2)) {
                         body->SetLinearVelocity({});
                     }
@@ -168,7 +172,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         }
     }
     isGrabbing = value;
-	resetVelocityOnGrabEnd.store(true);
+	reset_velocity.store(true);
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
