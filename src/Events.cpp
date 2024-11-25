@@ -7,7 +7,7 @@ void Grab() {
 }
 
 RE::BSEventNotifyControl GrabEventHandler::ProcessEvent(
-    const RE::TESGrabReleaseEvent* a_event, RE::BSTEventSource<RE::TESGrabReleaseEvent>* a_eventSource) {
+    const RE::TESGrabReleaseEvent* a_event, RE::BSTEventSource<RE::TESGrabReleaseEvent>*) {
 
     if (!a_event) {
         return RE::BSEventNotifyControl::kContinue;

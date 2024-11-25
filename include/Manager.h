@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+
 #include "Raycast.h"
 #include "InputManager.h"
 #include "Config.h"
@@ -13,32 +15,31 @@ class Manager {
     RE::NiPoint2 angle = {0, 0};
     RE::NiPoint2 position = {0, 0};
     RE::COL_LAYER oldCollisionLayer;
-    inline static Manager* singleton = NULL;
+    inline static Manager* singleton = nullptr;
 
     static inline bool doRotate = false;
     static inline bool doTranslate = false;
     static inline bool doTranslateZ = false;
 
-    void UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPosition);
-    float NormalizeAngle(float angle);
+    void UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& rayPosition) const;
+    static float NormalizeAngle(float angle);
 
 public:
-
-    bool GetDoRotate() {
+    static bool GetDoRotate() {
         return doRotate;
     }
 
-    bool GetDoTranslate() {
+    static bool GetDoTranslate() {
         return doTranslate ;
     }
 
-    bool GetTranslateZ() {
+    static bool GetTranslateZ() {
         return doTranslateZ;
     }
 
-    Manager() { 
-        auto input = InputManager::GetSingleton();
-        input->AddSink("Rotation", [](RE::ButtonEvent* button) { 
+    Manager() {
+        const auto input = InputManager::GetSingleton();
+        input->AddSink("Rotation", [](const RE::ButtonEvent* button) { 
             if (button->IsDown()) {
                 doRotate = true;
             } else if (button->IsUp()) {
@@ -46,7 +47,7 @@ public:
             }
         });
 
-        input->AddSink("Translation", [](RE::ButtonEvent* button) {
+        input->AddSink("Translation", [](const RE::ButtonEvent* button) {
             if (button->IsDown()) {
                 doTranslate = true;
             } else if (button->IsUp()) {
@@ -54,7 +55,7 @@ public:
             }
         });
 
-        input->AddSink("ZTranslation", [](RE::ButtonEvent* button) {
+        input->AddSink("ZTranslation", [](const RE::ButtonEvent* button) {
             if (button->IsDown()) {
                 doTranslateZ = true;
             } else if (button->IsUp()) {
@@ -62,62 +63,62 @@ public:
             }
         });
 
-        input->AddSink("MoveObjectCloser", [](RE::ButtonEvent* button) {
+        input->AddSink("MoveObjectCloser", [](RE::ButtonEvent*) {
             Manager::GetSingleton()->TranslateZ(3.f);
         });
 
-        input->AddSink("MoveObjectFruther", [](RE::ButtonEvent* button) {
+        input->AddSink("MoveObjectFurther", [](RE::ButtonEvent*) {
             Manager::GetSingleton()->TranslateZ(-3.f);
         });
 
         input->AddSink("RotateXPlus",
-        [this](RE::ButtonEvent* button) { 
-            auto config = Config::GetSingleton();
+        [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             RotateX(config->ButtonRotateXSensitivity / 360 * M_PI);
         });
 
-        input->AddSink("RotateXMinus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("RotateXMinus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             RotateX(-config->ButtonRotateXSensitivity / 360 * M_PI);
         });
 
-        input->AddSink("RotateYPlus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("RotateYPlus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             RotateY(-config->ButtonRotateYSensitivity / 360 * M_PI);
         });
 
-        input->AddSink("RotateYMinus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("RotateYMinus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             RotateY(config->ButtonRotateYSensitivity / 360 * M_PI);
         });
 
-        input->AddSink("TranslateXPlus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateXPlus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateX(config->ButtonTranslateXSensitivity);
         });
 
-        input->AddSink("TranslateXMinus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateXMinus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateX(-config->ButtonTranslateXSensitivity);
         });
 
-        input->AddSink("TranslateYPlus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateYPlus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateY(config->ButtonTranslateYSensitivity);
         });
 
-        input->AddSink("TranslateYMinus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateYMinus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateY(-config->ButtonTranslateYSensitivity);
         });
 
-        input->AddSink("TranslateZPlus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateZPlus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateZ(config->ButtonTranslateZSensitivity);
         });
 
-        input->AddSink("TranslateZMinus", [this](RE::ButtonEvent* button) {
-            auto config = Config::GetSingleton();
+        input->AddSink("TranslateZMinus", [this](RE::ButtonEvent*) {
+            const auto config = Config::GetSingleton();
             TranslateZ(-config->ButtonTranslateZSensitivity);
         });
     }
@@ -127,60 +128,52 @@ public:
         }
         return singleton;
     }
-    void SetGrabbing(bool value, RE::TESObjectREFRPtr ref);
-    void RotateX(float x) {
+    void SetGrabbing(bool value, const RE::TESObjectREFRPtr& ref);
+    void RotateX(const float x) {
         if (glm::abs(angle.y) > glm::half_pi<float>()) {
             angle.x = NormalizeAngle(angle.x - x);
         } else {
             angle.x = NormalizeAngle(angle.x + x);
         }
     }
-    void RotateY(float y) {
+    void RotateY(const float y) {
         angle.y = NormalizeAngle(angle.y + y);
     }
-    void TranslateX(float x) {
+    void TranslateX(const float x) {
         position.x += x;
     }
-    void TranslateY(float y) {
+    void TranslateY(const float y) {
         position.y += y;
     }
-    void TranslateZ(float value) {
-        RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+    void TranslateZ(const float value) {
+        const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
 
-        if (camera->currentState.get()->id == RE::CameraState::kThirdPerson) {
+        if (camera->currentState->id == RE::CameraState::kThirdPerson) {
 
             auto candidate = thirdPersonDistance + value;
-            auto config = Config::GetSingleton();
+            const auto config = Config::GetSingleton();
 
-            if (candidate < config->TranslateZMinDistance) {
-                candidate = config->TranslateZMinDistance;
-            }
+            candidate = std::max(candidate, config->TranslateZMinDistance);
 
-            if (candidate > config->TranslateZMaxDistance) {
-                candidate = config->TranslateZMaxDistance;
-            }
+            candidate = std::min(candidate, config->TranslateZMaxDistance);
 
             thirdPersonDistance = candidate;
 
         } else {
             
             auto candidate = fistPersonDistance + value;
-            auto config = Config::GetSingleton();
+            const auto config = Config::GetSingleton();
 
-            if (candidate < config->TranslateZMinDistance) {
-                candidate = config->TranslateZMinDistance;
-            }
+            candidate = std::max(candidate, config->TranslateZMinDistance);
 
-            if (candidate > config->TranslateZMaxDistance) {
-                candidate = config->TranslateZMaxDistance;
-            }
+            candidate = std::min(candidate, config->TranslateZMaxDistance);
 
             fistPersonDistance = candidate;
         }
 
     }
-    bool GetIsGrabbing() {
+    bool GetIsGrabbing() const {
         return isGrabbing;
     }
-    void UpdatePosition(RE::TESObjectREFR* obj);
+    void UpdatePosition(RE::TESObjectREFR* obj) const;
 };

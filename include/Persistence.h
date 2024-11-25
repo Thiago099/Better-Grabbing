@@ -5,9 +5,9 @@
 
 namespace Persistence {
 	inline void LoadConfiguration() {
-		auto ini = new Ini::IniReader("Better Grabbing.ini");
+		const auto ini = new Ini::IniReader("Better Grabbing.ini");
         auto input = InputManager::GetSingleton();
-        auto config = Config::GetSingleton();
+        const auto config = Config::GetSingleton();
         ini->GetKeyPair("keyboard", [input](const char * button,const char*  evt) {
 			input->AddSource(evt, "keyboard", button);
         });

@@ -7,17 +7,16 @@
 namespace Hooks {
     inline bool OriginalDraggingBehavior = false;
     struct GrabHook {
-        static inline bool thunk(RE::ObjectRefHandle* a1, RE::TESObjectREFRPtr* a2) { 
-            auto obj = a1->get();
+        static bool thunk(RE::ObjectRefHandle* a1, RE::TESObjectREFRPtr* a2) {
+            const auto obj = a1->get();
             OriginalDraggingBehavior = false;
             if (obj) {
-                auto obj2 = obj.get();
-                if (obj2) {
+                if (const auto obj2 = obj.get()) {
                     if (obj2->As<RE::Actor>()) {
                         OriginalDraggingBehavior = true;
                         return originalFunction(a1, a2);
                     } else {
-                        auto manager = Manager::GetSingleton();
+                        const auto manager = Manager::GetSingleton();
                         if (!manager->GetIsGrabbing()) {
                             manager->SetGrabbing(true, obj);
                         }
@@ -28,7 +27,7 @@ namespace Hooks {
             return false;
         }
         static inline REL::Relocation<decltype(thunk)> originalFunction;
-        inline static void Install(HookBuilder* builder) {
+        static void Install(HookBuilder* builder) {
             //SE ID: 39479 SE Offset: 0x69
             //AE ID: 40556 AE Offset: 0x71 (Heuristic)
             builder->AddCall<GrabHook, 5, 14>(
@@ -40,7 +39,7 @@ namespace Hooks {
     };
     struct GrabHook2 {
         static inline int64_t thunk(RE::PlayerCharacter* a1) {
-            auto manager = Manager::GetSingleton();
+            const auto manager = Manager::GetSingleton();
             if (OriginalDraggingBehavior || !manager->GetIsGrabbing()) {
                 manager->SetGrabbing(false, nullptr);
                 return originalFunction(a1);
@@ -61,15 +60,15 @@ namespace Hooks {
 
         static inline bool InputEvent(RE::InputEvent* event) {
 
-            auto manager = Manager::GetSingleton();
-            auto config = Config::GetSingleton();
-            if (auto button = event->AsButtonEvent()) {
+            const auto manager = Manager::GetSingleton();
+            const auto config = Config::GetSingleton();
+            if (const auto button = event->AsButtonEvent()) {
                 if (InputManager::GetSingleton()->ProcessInput(button)) {
                     return true;
                 }
             }
             if (event->device == RE::INPUT_DEVICE::kMouse){
-                if (auto move = event->AsMouseMoveEvent()) {
+                if (const auto move = event->AsMouseMoveEvent()) {
                     bool block = false;
                     if (manager->GetDoRotate()) {
                         Manager::GetSingleton()->RotateX(move->mouseInputX * config->MouseRotateXSensitivity);
@@ -89,7 +88,7 @@ namespace Hooks {
                 } 
             }
             if (event->device == RE::INPUT_DEVICE::kGamepad) {
-                if (auto move = event->AsThumbstickEvent()) {
+                if (const auto move = event->AsThumbstickEvent()) {
                     bool block = false;
                     if (manager->GetDoRotate()) {
                         Manager::GetSingleton()->RotateX(move->xValue * config->GamepadRotateXSensitivity);
@@ -113,14 +112,14 @@ namespace Hooks {
         }
         static inline void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_event) {
 
-            auto manager = Manager::GetSingleton();
+            const auto manager = Manager::GetSingleton();
 
             if (!manager->GetIsGrabbing()) {
                 originalFunction(a_dispatcher, a_event);
                 return;
             }
 
-            auto ui = RE::UI::GetSingleton();
+            const auto ui = RE::UI::GetSingleton();
             if (ui->IsApplicationMenuOpen() || ui->IsItemMenuOpen() || ui->IsModalMenuOpen() || ui->GameIsPaused()) {
                 originalFunction(a_dispatcher, a_event);
                 return;
@@ -132,7 +131,7 @@ namespace Hooks {
 
             for (auto current = *a_event; current; current = current->next) {
 
-                bool suppress = InputEvent(current);
+                const bool suppress = InputEvent(current);
 
                 if (suppress) {
                     if (current != last) {
@@ -168,7 +167,7 @@ namespace Hooks {
     };
 
     inline void Install() {
-        auto builder = new HookBuilder();
+        const auto builder = new HookBuilder();
         GrabHook::Install(builder);
         GrabHook2::Install(builder);
         ProcessInputQueueHook::Install(builder);

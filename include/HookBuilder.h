@@ -44,7 +44,7 @@ public:
                 return;
             }
         }
-        REL::Relocation<std::uintptr_t> function{REL::RelocationID(_se_id, _ae_id)};
+        const REL::Relocation<std::uintptr_t> function{REL::RelocationID(_se_id, _ae_id)};
         if constexpr (Kind == WriteKind::kCall) {
             T::originalFunction =
                 tranpoline.write_call<N>(function.address() + REL::Relocate(_se_offset, _ae_offset), T::thunk);
@@ -83,9 +83,9 @@ public:
     void Install() {
         auto& trampoline = SKSE::GetTrampoline();
         trampoline.create(std::accumulate(
-            items.begin(), items.end(), size_t(0),
-            [](size_t sum, const std::unique_ptr<GenericHookItem>& cls) { return sum + cls->GetTrampolineSize(); }));
-        for (auto& item : items) {
+            items.begin(), items.end(), static_cast<size_t>(0),
+            [](const size_t sum, const std::unique_ptr<GenericHookItem>& cls) { return sum + cls->GetTrampolineSize(); }));
+        for (const auto& item : items) {
             item->Install(trampoline);
         }
     }

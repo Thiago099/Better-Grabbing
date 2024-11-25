@@ -6,7 +6,7 @@ class InputManager {
     uint32_t auto_increment = 0;
     std::map<std::string, uint32_t> idMap;
     uint32_t GetId(std::string key);
-    static inline InputManager* singleton = NULL;
+    static inline InputManager* singleton = nullptr;
 public:
     static InputManager* GetSingleton() {
         if (!singleton) {

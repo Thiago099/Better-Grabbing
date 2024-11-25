@@ -2,7 +2,7 @@
 
 class Config {
 private:
-    static inline Config* singleton = NULL;
+    static inline Config* singleton = nullptr;
 public:
     static Config* GetSingleton() {
         if (!singleton) {
@@ -11,26 +11,26 @@ public:
         return singleton;
     }
 
-    float MouseRotateXSensitivity = 0.005;
-    float MouseRotateYSensitivity = 0.005;
+    float MouseRotateXSensitivity = 0.005f;
+    float MouseRotateYSensitivity = 0.005f;
 
-    float MouseTranslateXSensitivity = 0.05;
-    float MouseTranslateYSensitivity = 0.05;
-    float MouseTranslateZSensitivity = 0.05;
+    float MouseTranslateXSensitivity = 0.05f;
+    float MouseTranslateYSensitivity = 0.05f;
+    float MouseTranslateZSensitivity = 0.05f;
 
 
-    float GamepadRotateXSensitivity = 0.1;
-    float GamepadRotateYSensitivity = 0.1;
+    float GamepadRotateXSensitivity = 0.1f;
+    float GamepadRotateYSensitivity = 0.1f;
 
-    float GamepadTranslateXSensitivity = 1.0;
-    float GamepadTranslateYSensitivity = 1.0;
-    float GamepadTranslateZSensitivity = 1.0;
+    float GamepadTranslateXSensitivity = 1.f;
+    float GamepadTranslateYSensitivity = 1.f;
+    float GamepadTranslateZSensitivity = 1.f;
 
-    float ButtonRotateXSensitivity = 10;
-    float ButtonRotateYSensitivity = 10;
-    float ButtonTranslateXSensitivity = 10;
-    float ButtonTranslateYSensitivity = 10;
-    float ButtonTranslateZSensitivity = 10;
+    float ButtonRotateXSensitivity = 10.f;
+    float ButtonRotateYSensitivity = 10.f;
+    float ButtonTranslateXSensitivity = 10.f;
+    float ButtonTranslateYSensitivity = 10.f;
+    float ButtonTranslateZSensitivity = 10.f;
 
     float TranslateZMaxDistance = 1000.0f;
     float TranslateZMinDistance = 60.0f;

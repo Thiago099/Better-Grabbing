@@ -7,7 +7,7 @@
 namespace fs = std::filesystem;
 
 namespace Ini {
-    inline std::string CommentString(std::string originalString) {
+    inline std::string CommentString(const std::string& originalString) {
         std::stringstream ss(originalString);
         std::string currentLine;
         std::string modifiedString;
@@ -23,9 +23,8 @@ namespace Ini {
         std::list<std::string> sorted_keys;
 
     public:
-        void SetSection(std::string section) {
-            auto it = sections.find(section);
-            if (it == sections.end()) {
+        void SetSection(const std::string& section) {
+            if (const auto it = sections.find(section); it == sections.end()) {
                 sections[section] = "";
                 sorted_keys.push_back(section);
             }
@@ -35,7 +34,7 @@ namespace Ini {
         void Add(T key, E value) {
             sections[current_section] += std::format("{} = {}\n", key, value);
         }
-        void Comment(std::string value) { sections[current_section] += CommentString(value) + "\n\n"; }
+        void Comment(const std::string& value) { sections[current_section] += CommentString(value) + "\n\n"; }
         std::string str() {
             std::string result = "";
             for (const auto& section : sorted_keys) {
@@ -44,8 +43,8 @@ namespace Ini {
             logger::trace("{}", result);
             return result;
         }
-        void Write(std::string fileName) {
-            fs::path appPath = std::filesystem::current_path() / "Data" / fileName;
+        void Write(const std::string& fileName) {
+            const fs::path appPath = std::filesystem::current_path() / "Data" / fileName;
             fs::create_directories(appPath.parent_path());
 
             logger::trace("write file start {}", appPath.string().c_str());
@@ -82,10 +81,10 @@ namespace Ini {
         void GetKeyPair(const char* section, std::function<void(const char*, const char*)> const& fn);
         void SetSection(const char* section) { _section = section; }
         const char* GetString(const char* key, const char* def = "") const { return _ini.GetValue(_section, key, def); }
-        float GetFloat(const char* key, float def = 0.0f) const {
+        float GetFloat(const char* key, const float def = 0.0f) const {
             return static_cast<float>(_ini.GetDoubleValue(_section, key, def));
         }
-        int GetInt(const char* key, int def = 0) const { return static_cast<int>(_ini.GetLongValue(_section, key, def)); }
-        bool GetBool(const char* key, bool def = false) const { return _ini.GetBoolValue(_section, key, def); }
+        int GetInt(const char* key, const int def = 0) const { return static_cast<int>(_ini.GetLongValue(_section, key, def)); }
+        bool GetBool(const char* key, const bool def = false) const { return _ini.GetBoolValue(_section, key, def); }
     };
 }
