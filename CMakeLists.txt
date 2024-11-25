@@ -30,9 +30,9 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 # ---------------------------------------------------- #
 
 configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
-        ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-        @ONLY)
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+    @ONLY)
 
 set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 set(RESOURCE_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.res)
@@ -63,14 +63,14 @@ find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
 
 file(
   GLOB_RECURSE
-  SOURCES
+  sources
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-  ${SOURCE_FILES}
+  ${sources}
 )
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES ${HEADER_FILES} ${SOURCE_FILES}
+  FILES ${headers} ${sources}
 )
 
 set(BUILD_TESTS OFF)
@@ -79,7 +79,7 @@ include(${COMMONLIB_SRC_DIR}/cmake/CommonLibSSE.cmake)
 add_commonlibsse_plugin(
   ${PROJECT_NAME}
   AUTHOR AUTHOR_NAME
-  SOURCES ${HEADER_FILES} ${SOURCE_FILES}
+  SOURCES ${headers} ${sources}
 )
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) 
 target_precompile_headers(${PROJECT_NAME} PRIVATE include/PCH.h)
