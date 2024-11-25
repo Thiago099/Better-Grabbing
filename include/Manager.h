@@ -26,7 +26,7 @@ class Manager {
 
 public:
 
-	std::atomic<bool> reset_velocity = true;
+	std::atomic<bool> resetVelocityOnGrabEnd = true;
 
     static bool GetDoRotate() {
         return doRotate;

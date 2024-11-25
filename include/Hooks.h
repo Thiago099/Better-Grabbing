@@ -129,7 +129,7 @@ namespace Hooks {
                         const auto readyweap_button = controlMap->GetMappedKey(userEvents->readyWeapon, device,
                                                        RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
 					    if (button->GetIDCode() == readyweap_button) {
-							Manager::GetSingleton()->reset_velocity.store(false);
+							Manager::GetSingleton()->resetVelocityOnGrabEnd.store(false);
 						    return originalFunction(a_dispatcher, a_event);
 					    }
                     }

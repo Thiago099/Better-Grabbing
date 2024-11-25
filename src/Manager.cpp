@@ -152,7 +152,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                     return;
                 }
 
-				if (reset_velocity.load()) {
+				if (resetVelocityOnGrabEnd.load()) {
                     if (const auto body = GetRigidBody(ref2)) {
                         body->SetLinearVelocity({});
                     }
@@ -168,7 +168,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         }
     }
     isGrabbing = value;
-	reset_velocity.store(true);
+	resetVelocityOnGrabEnd.store(true);
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
