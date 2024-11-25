@@ -82,23 +82,29 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RE::NiPoint3& rayPos
 
     auto config = Config::GetSingleton();
 
-    auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
+    if (config->EnablePhysicalBasedMovement) {
+        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-    RE::hkVector4 velocityVector(direction);
+        RE::hkVector4 velocityVector(direction);
+        RE::hkVector4 havockPosition;
+        body->GetPosition(havockPosition);
+        float components[4];
+        _mm_store_ps(components, havockPosition.quad);
+        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
+        constexpr auto havockToSkyrimConversionRate = 69.9915;
+        newPosition *= havockToSkyrimConversionRate;
+
+        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+        SetPosition(obj, newPosition);
+        obj->Update3DPosition(true);
+        body->SetLinearVelocity(velocityVector);
+    } else {
+        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+        SetPosition(obj, pos);
+        obj->Update3DPosition(true);
+    }
 
 
-    RE::hkVector4 havockPosition;
-    body->GetPosition(havockPosition);
-    float components[4];
-    _mm_store_ps(components, havockPosition.quad);
-    RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-    constexpr auto havockToSkyrimConversionRate = 69.9915;
-    newPosition *= havockToSkyrimConversionRate;
-
-    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-    SetPosition(obj, newPosition);
-    obj->Update3DPosition(true);
-    body->SetLinearVelocity(velocityVector);
 
 
 }

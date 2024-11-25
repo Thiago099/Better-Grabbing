@@ -39,4 +39,5 @@ public:
 
     float DragMovementDamping = 1.0f;
     bool DisableCollisionWithItemsWhileGrabbing = true;
+    bool EnablePhysicalBasedMovement = true;
 };
