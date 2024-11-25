@@ -111,10 +111,7 @@ namespace Hooks {
             return false;
         }
         static void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_event) {
-
-            const auto manager = Manager::GetSingleton();
-
-            if (!manager->GetIsGrabbing()) {
+            if (const auto manager = Manager::GetSingleton(); !manager->GetIsGrabbing()) {
                 originalFunction(a_dispatcher, a_event);
                 return;
             }
@@ -130,10 +127,7 @@ namespace Hooks {
             size_t length = 0;
 
             for (auto current = *a_event; current; current = current->next) {
-
-                const bool suppress = InputEvent(current);
-
-                if (suppress) {
+                if (const bool suppress = InputEvent(current)) {
                     if (current != last) {
                         last->next = current->next;
                     } else {
