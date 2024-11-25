@@ -83,25 +83,28 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
 
     const auto config = Config::GetSingleton();
 
-    const auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
+    if (config->EnablePhysicalBasedMovement) {
+        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-    const RE::hkVector4 velocityVector(direction);
+        RE::hkVector4 velocityVector(direction);
 
+        RE::hkVector4 havockPosition;
+        body->GetPosition(havockPosition);
+        float components[4];
+        _mm_store_ps(components, havockPosition.quad);
+        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
+        constexpr auto havockToSkyrimConversionRate = 69.9915f;
+        newPosition *= havockToSkyrimConversionRate;
 
-    RE::hkVector4 havockPosition;
-    body->GetPosition(havockPosition);
-    float components[4];
-    _mm_store_ps(components, havockPosition.quad);
-    RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-    constexpr float havockToSkyrimConversionRate = 69.9915f;
-    newPosition *= havockToSkyrimConversionRate;
-
-    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-    SetPosition(obj, newPosition);
-    obj->Update3DPosition(true);
-    body->SetLinearVelocity(velocityVector);
-
-
+        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+        SetPosition(obj, newPosition);
+        obj->Update3DPosition(true);
+        body->SetLinearVelocity(velocityVector);
+    } else {
+        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+        SetPosition(obj, pos);
+        obj->Update3DPosition(true);
+    }
 }
 
 float Manager::NormalizeAngle(float angle) {
