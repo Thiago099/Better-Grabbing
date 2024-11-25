@@ -13,7 +13,12 @@ RE::BSEventNotifyControl GrabEventHandler::ProcessEvent(
         return RE::BSEventNotifyControl::kContinue;
     }
 
-    Manager::GetSingleton()->SetGrabbing(a_event->grabbed, a_event->ref);
+    if (!a_event->grabbed) {
+        auto manager = Manager::GetSingleton();
+        if (manager->GetIsGrabbing()) {
+            manager->SetGrabbing(false, a_event->ref);
+        }
+    }
 
     return RE::BSEventNotifyControl::kContinue;
 
