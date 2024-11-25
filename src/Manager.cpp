@@ -18,7 +18,6 @@ namespace {
         return body;
     }
 
-
     void SetPosition(RE::TESObjectREFR* ref, const RE::NiPoint3& a_position) {
         if (!ref) {
             return;
@@ -52,7 +51,6 @@ namespace {
     }
 }
 
-
 void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& rayPosition) const {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
@@ -83,18 +81,18 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
 
     const auto config = Config::GetSingleton();
 
-    auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
+    if (config->EnablePhysicalBasedMovement) {
+        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-    RE::hkVector4 velocityVector(direction);
+        RE::hkVector4 velocityVector(direction);
 
-
-    RE::hkVector4 havockPosition;
-    body->GetPosition(havockPosition);
-    float components[4];
-    _mm_store_ps(components, havockPosition.quad);
-    RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-    constexpr auto havockToSkyrimConversionRate = 69.9915;
-    newPosition *= havockToSkyrimConversionRate;
+        RE::hkVector4 havockPosition;
+        body->GetPosition(havockPosition);
+        float components[4];
+        _mm_store_ps(components, havockPosition.quad);
+        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
+        constexpr auto havockToSkyrimConversionRate = 69.9915f;
+        newPosition *= havockToSkyrimConversionRate;
 
         SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
         SetPosition(obj, newPosition);
@@ -105,10 +103,6 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
         SetPosition(obj, pos);
         obj->Update3DPosition(true);
     }
-
-
-
-
 }
 
 float Manager::NormalizeAngle(float angle) {
@@ -126,7 +120,6 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         position = {0, 0};
         if (ref) {
             if (const auto ref2 = ref.get()) {
-
                 if (ref2->As<RE::Actor>()) {
                     return;
                 }
@@ -147,39 +140,37 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 }
             }
         }
-     
+
     } else {
         if (ref) {
             if (const auto ref2 = ref.get()) {
-
                 if (ref2->As<RE::Actor>()) {
                     return;
                 }
 
-				if (reset_velocity.load()) {
+                if (resetVelocityOnGrabEnd.load()) {
                     if (const auto body = GetRigidBody(ref2)) {
                         body->SetLinearVelocity({});
                     }
-				}
+                }
 
                 if (const auto config = Config::GetSingleton(); config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         object3D->SetCollisionLayer(oldCollisionLayer);
                     }
                 }
-
             }
         }
     }
     isGrabbing = value;
-	reset_velocity.store(true);
+    resetVelocityOnGrabEnd.store(true);
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
     auto rayMaxDistance = 0.f;
 
     const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
-    
+
     if (camera->currentState->id == RE::CameraState::kThirdPerson) {
         rayMaxDistance = thirdPersonDistance;
     } else {
