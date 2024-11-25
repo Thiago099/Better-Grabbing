@@ -1,4 +1,4 @@
-set(HEADER_FILES
+set(headers ${headers}
 	include/PCH.h
 	include/logger.h
 	include/Plugin.h

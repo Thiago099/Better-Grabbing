@@ -1,4 +1,4 @@
-set(SOURCE_FILES
+set(sources ${sources}
 	src/Plugin.cpp
 	src/Events.cpp
 	src/Raycast.cpp
