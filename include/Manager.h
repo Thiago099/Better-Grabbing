@@ -179,4 +179,20 @@ public:
         return isGrabbing;
     }
     void UpdatePosition(RE::TESObjectREFR* obj) const;
+    static bool IsTelekinesisObject(RE::TESObjectREFR* grabbed_ob);
+};
+
+class ActiveEffectVisitor final : public RE::MagicTarget::ForEachActiveEffectVisitor {
+	RE::TESObjectREFR* grabbed_obj = nullptr;
+public:
+	RE::BSContainer::ForEachResult Accept(RE::ActiveEffect* a_effect) override;
+
+    static ActiveEffectVisitor* GetSingleton() {
+		static ActiveEffectVisitor singleton;
+		return &singleton;
+	}
+
+	std::atomic<bool> is_using_telekinesis = false;
+
+	void Reset(RE::TESObjectREFR* grabbed_object);
 };
