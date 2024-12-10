@@ -12,16 +12,15 @@ namespace Hooks {
             OriginalDraggingBehavior = false;
             if (obj) {
                 if (const auto obj2 = obj.get()) {
-                    if (obj2->As<RE::Actor>()) {
+                    if (obj2->As<RE::Actor>() || Manager::IsTelekinesisObject(obj.get())) {
                         OriginalDraggingBehavior = true;
                         return originalFunction(a1, a2);
-                    } else {
-                        const auto manager = Manager::GetSingleton();
-                        if (!manager->GetIsGrabbing()) {
-                            manager->SetGrabbing(true, obj);
-                        }
-                        manager->UpdatePosition(obj2);
                     }
+                    const auto manager = Manager::GetSingleton();
+                    if (!manager->GetIsGrabbing()) {
+                        manager->SetGrabbing(true, obj);
+                    }
+                    manager->UpdatePosition(obj2);
                 }
             }
             return false;

@@ -201,3 +201,33 @@ void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
         UpdateObjectTransform(obj, ray.position);
     });
 }
+
+RE::BSContainer::ForEachResult ActiveEffectVisitor::Accept(RE::ActiveEffect* a_effect)
+{
+    if (!grabbed_obj) return RE::BSContainer::ForEachResult::kStop;
+	if (!a_effect) return RE::BSContainer::ForEachResult::kContinue;
+	const auto telekinesis_effect = skyrim_cast<RE::TelekinesisEffect*>(a_effect);
+	if (!telekinesis_effect) return RE::BSContainer::ForEachResult::kContinue;
+	if (telekinesis_effect->grabbedObject.get()->GetFormID() != grabbed_obj->GetFormID()) {
+	    return RE::BSContainer::ForEachResult::kContinue;
+	}
+	is_using_telekinesis.store(true);
+	return RE::BSContainer::ForEachResult::kStop;
+}
+
+void ActiveEffectVisitor::Reset(RE::TESObjectREFR* grabbed_object)
+{
+	this->grabbed_obj = grabbed_object;
+	is_using_telekinesis.store(false);
+}
+
+
+bool Manager::IsTelekinesisObject(RE::TESObjectREFR* grabbed_ob)
+{
+    const auto visitor = ActiveEffectVisitor::GetSingleton();
+	visitor->Reset(grabbed_ob);
+	if (const auto magicTarget = RE::PlayerCharacter::GetSingleton()->AsMagicTarget()) {
+		magicTarget->VisitEffects(*visitor);
+	}
+	return visitor->is_using_telekinesis.load();
+}
