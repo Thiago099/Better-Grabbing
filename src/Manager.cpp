@@ -208,7 +208,9 @@ RE::BSContainer::ForEachResult ActiveEffectVisitor::Accept(RE::ActiveEffect* a_e
 	if (!a_effect) return RE::BSContainer::ForEachResult::kContinue;
 	const auto telekinesis_effect = skyrim_cast<RE::TelekinesisEffect*>(a_effect);
 	if (!telekinesis_effect) return RE::BSContainer::ForEachResult::kContinue;
-	if (telekinesis_effect->grabbedObject.get()->GetFormID() != grabbed_obj->GetFormID()) {
+    const auto telekinesis_obj = telekinesis_effect->grabbedObject.get();
+	if (!telekinesis_obj) return RE::BSContainer::ForEachResult::kContinue;
+	if (telekinesis_obj->GetFormID() != grabbed_obj->GetFormID()) {
 	    return RE::BSContainer::ForEachResult::kContinue;
 	}
 	is_using_telekinesis.store(true);
