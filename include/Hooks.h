@@ -12,7 +12,7 @@ namespace Hooks {
             OriginalDraggingBehavior = false;
             if (obj) {
                 if (const auto obj2 = obj.get()) {
-                    if (obj2->As<RE::Actor>() || Manager::IsTelekinesisObject(obj.get())) {
+                    if (obj2->As<RE::Actor>() || Manager::IsTelekinesisObject(obj2)) {
                         OriginalDraggingBehavior = true;
                         return originalFunction(a1, a2);
                     }
