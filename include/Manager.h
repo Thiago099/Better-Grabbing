@@ -175,6 +175,7 @@ public:
         }
 
     }
+
     bool GetIsGrabbing() const {
         return isGrabbing;
     }

@@ -12,7 +12,7 @@ namespace Hooks {
             OriginalDraggingBehavior = false;
             if (obj) {
                 if (const auto obj2 = obj.get()) {
-                    if (obj2->As<RE::Actor>() || Manager::IsTelekinesisObject(obj2)) {
+                    if (UseDefaultGrabbingBehavior(obj2)) {
                         OriginalDraggingBehavior = true;
                         return originalFunction(a1, a2);
                     }
@@ -25,6 +25,20 @@ namespace Hooks {
             }
             return false;
         }
+
+        static bool UseDefaultGrabbingBehavior(RE::TESObjectREFR* obj2) {
+
+            if (auto base = obj2->GetBaseObject()) {
+                if (base->As<RE::TESFlora>()) {
+                    return true;
+                }
+            }
+
+            return 
+                obj2->As<RE::Actor>() ||
+                Manager::IsTelekinesisObject(obj2);
+        }
+
         static inline REL::Relocation<decltype(thunk)> originalFunction;
         static void Install(HookBuilder* builder) {
             //SE ID: 39479 SE Offset: 0x69
