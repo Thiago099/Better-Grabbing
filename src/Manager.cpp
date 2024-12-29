@@ -1,4 +1,6 @@
 #include "Manager.h"
+#include "DrawDebugExtension.h"
+#include "GeoMath.h"
 
 namespace {
     RE::bhkRigidBody* GetRigidBody(const RE::TESObjectREFR* refr) {
@@ -100,6 +102,26 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
         body->SetLinearVelocity(velocityVector);
     } else {
         SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+
+
+        #ifndef NDEBUG
+        const auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
+
+        DrawDebug::Clean();
+        auto box = GeoMath::Box(obj);
+
+        auto ratio = GeoMath::isectBox(cameraPosition, rayPosition + RayMath::rotate(10, cameraAngle), box);
+
+        logger::trace("{}", ratio);
+
+         if (ratio != -1) {
+         }
+
+        DrawDebug::DrawLine(box.GetPosition(), rayPosition, {0, 255, 0, 100});
+        DrawDebug::DrawBoundingBox(obj);
+
+        #endif 
+
         SetPosition(obj, pos);
         obj->Update3DPosition(true);
     }

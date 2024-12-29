@@ -21,6 +21,7 @@ namespace Hooks {
                         manager->SetGrabbing(true, obj);
                     }
                     manager->UpdatePosition(obj2);
+
                 }
             }
             return false;

@@ -1,4 +1,5 @@
 #include "Events.h"
+#include "DrawDebug.h"
 void Grab() {
     float bar = 0;
     using func_t = void(RE::PlayerCharacter* a1, float a2, void* a3, float* a4);
@@ -18,6 +19,9 @@ RE::BSEventNotifyControl GrabEventHandler::ProcessEvent(
         if (manager->GetIsGrabbing()) {
             manager->SetGrabbing(false, a_event->ref);
         }
+        #ifndef NDEBUG
+        DrawDebug::Clean();
+        #endif
     }
 
     return RE::BSEventNotifyControl::kContinue;
