@@ -1057,7 +1057,7 @@ PS_OUTPUT main(PS_INPUT input) {
         }
         static void Clean() {
             auto drawHandler = DrawHandler::GetSingleton();
-            drawHandler-> renderables.ClearLists();
+            drawHandler->renderables.ClearLists();
         }
         static void DrawCircle(const RE::NiPoint3& a_base, const RE::NiPoint3& a_X, const RE::NiPoint3& a_Y,
                                float a_radius, uint8_t a_numSides, glm::vec4 a_color) {

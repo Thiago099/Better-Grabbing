@@ -20,7 +20,9 @@ RE::BSEventNotifyControl GrabEventHandler::ProcessEvent(
             manager->SetGrabbing(false, a_event->ref);
         }
         #ifndef NDEBUG
-        DrawDebug::Clean();
+        SKSE::GetTaskInterface()->AddTask([]() {
+            DrawDebug::Clean();
+        });
         #endif
     }
 
