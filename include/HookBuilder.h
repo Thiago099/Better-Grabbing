@@ -81,10 +81,11 @@ public:
     }
 
     void Install() {
+        SKSE::AllocTrampoline(std::accumulate(items.begin(), items.end(), static_cast<size_t>(0),
+                                              [](const size_t sum, const std::unique_ptr<GenericHookItem>& cls) {
+                                                  return sum + cls->GetTrampolineSize();
+                                              }));
         auto& trampoline = SKSE::GetTrampoline();
-        trampoline.create(std::accumulate(
-            items.begin(), items.end(), static_cast<size_t>(0),
-            [](const size_t sum, const std::unique_ptr<GenericHookItem>& cls) { return sum + cls->GetTrampolineSize(); }));
         for (const auto& item : items) {
             item->Install(trampoline);
         }

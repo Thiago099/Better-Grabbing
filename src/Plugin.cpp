@@ -1,4 +1,5 @@
 #include "Plugin.h"
+#include "DrawDebug.h"
 
 void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
@@ -8,6 +9,9 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kPostLoadGame || message->type == SKSE::MessagingInterface::kNewGame) {
         Manager::GetSingleton()->SetGrabbing(false, nullptr);
     }
+    #ifndef NDEBUG
+        DrawDebug::OnMessage(message);
+    #endif 
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface *skse) {

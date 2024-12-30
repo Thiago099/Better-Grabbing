@@ -28,6 +28,8 @@ void RayCollector::AddRayHit(const RE::hkpCdBody& body, const RE::hkpShapeRayCas
         if (!evaluator(hit.getAVObject())) {
             return;
         }
+        RE::PlayerCharacter::GetSingleton()->GetBoundMax();
+        RE::PlayerCharacter::GetSingleton()->GetBoundMin();
         earlyOutHitFraction = hit.hitFraction;
         hits.push_back(std::move(hit));
     }

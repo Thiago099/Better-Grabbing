@@ -11,4 +11,7 @@ set(headers ${headers}
 	include/InputManager.h
 	include/Ini.h
 	include/Config.h
+	include/DrawDebug.h
+	include/DrawDebugExtension.h
+	include/GeoMath.h
 )

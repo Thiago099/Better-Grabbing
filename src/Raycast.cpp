@@ -1,44 +1,6 @@
 #include "Raycast.h"
 
-namespace {
-    float pointDistance(const RE::NiPoint3 a, const RE::NiPoint3 b) {
-        const float dx = a.x - b.x;
-        const float dy = a.y - b.y;
-        const float dz = a.z - b.z;
-        return std::sqrt(dx * dx + dy * dy + dz * dz);
-    }
 
-    RE::NiPoint3 angles2dir(const RE::NiPoint3& angles) {
-    RE::NiPoint3 ans;
-
-    const float sinx = sinf(angles.x);
-    const float cosx = cosf(angles.x);
-    const float sinz = sinf(angles.z);
-    const float cosz = cosf(angles.z);
-
-    ans.x = cosx * sinz;
-    ans.y = cosx * cosz;
-    ans.z = -sinx;
-
-    return ans;
-}
-
-    RE::NiPoint3 rotate(const RE::NiPoint3& A, const RE::NiPoint3& angles) {
-        RE::NiMatrix3 R;
-        R.EulerAnglesToAxesZXY(angles);
-        return R * A;
-    }
-    RE::NiPoint3 rotate(const float r, const RE::NiPoint3& angles) { return angles2dir(angles) * r; }
-
-
-    [[maybe_unused]] RE::MagicTarget* FindPickTarget(RE::MagicCaster* caster, RE::NiPoint3& a_targetLocation,
-                                                            RE::TESObjectCELL** a_targetCell, RE::bhkPickData& a_pickData) {
-        using func_t = RE::MagicTarget*(RE::MagicCaster * caster, RE::NiPoint3 & a_targetLocation,
-                                        RE::TESObjectCELL * *a_targetCell, RE::bhkPickData & a_pickData);
-        const REL::Relocation<func_t> func{RELOCATION_ID(33676, 34456)};
-        return func(caster, a_targetLocation, a_targetCell, a_pickData);
-    }
-}
 
 enum class LineOfSightLocation : uint32_t { kNone, kEyes, kHead, kTorso, kFeet };
 
@@ -89,17 +51,17 @@ std::pair<RE::NiPoint3, RE::NiPoint3> RayCast::GetCameraData() {
     return {QuaternionToEuler(rotation), translation};
 }
 
-RayCastResult RayCast::Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, const float raySize) {
+RayOutput RayCast::Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, const float raySize) {
 
     auto [camera_rotation, camera_position] = GetCameraData();
 
-    auto [ray_position, ray_object] = CastRay(camera_rotation, camera_position, evaluator, raySize);
-    return RayCastResult(ray_position, ray_object);
+    return CastRay(camera_rotation, camera_position, evaluator, raySize);
 }
 
-std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
+RayOutput RayCast::CastRay(
     RE::NiPoint3 angle, RE::NiPoint3 position,
     std::function<bool(RE::NiAVObject*)> const& evaluator, float raySize) {
+    using namespace RayMath;
     auto havokWorldScale = RE::bhkWorld::GetWorldScale();
     RE::bhkPickData pick_data;
     RE::NiPoint3 ray_start, ray_end;
@@ -140,8 +102,10 @@ std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
         }
     }
 
+
     if (!best.body) {
-        return std::pair(ray_end, nullptr);
+        return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, ray_end, best.hitFraction,
+                         best.body, nullptr, false};
     }
 
     auto hitpos = ray_start + (ray_end - ray_start) * best.hitFraction;
@@ -149,7 +113,10 @@ std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
     if (auto av = best.getAVObject()) {
         auto ref = av->GetUserData();
 
-        return {hitpos, ref};
+        return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, hitpos, best.hitFraction,
+                         best.body, ref, true};
+
     }
-    return std::pair(hitpos, nullptr);
+
+    return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, hitpos, best.hitFraction, best.body, nullptr, true};
 }

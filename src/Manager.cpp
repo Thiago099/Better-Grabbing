@@ -1,4 +1,6 @@
 #include "Manager.h"
+#include "DrawDebugExtension.h"
+#include "GeoMath.h"
 
 namespace {
     RE::bhkRigidBody* GetRigidBody(const RE::TESObjectREFR* refr) {
@@ -51,7 +53,7 @@ namespace {
     }
 }
 
-void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& rayPosition) const {
+void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
     const auto yoffsetRotation = angle.y;
@@ -71,7 +73,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
     const float y = position.x * sin(-cameraAngle.z);
     const float z = position.y;
 
-    const auto pos = rayPosition + RE::NiPoint3(x, y, z);
+    auto pos = ray.position + RE::NiPoint3(x, y, z);
 
     const auto body = GetRigidBody(obj);
 
@@ -81,28 +83,57 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
 
     const auto config = Config::GetSingleton();
 
-    if (config->EnablePhysicalBasedMovement) {
-        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-        RE::hkVector4 velocityVector(direction);
+    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
-        RE::hkVector4 havockPosition;
-        body->GetPosition(havockPosition);
-        float components[4];
-        _mm_store_ps(components, havockPosition.quad);
-        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-        constexpr auto havockToSkyrimConversionRate = 69.9915f;
-        newPosition *= havockToSkyrimConversionRate;
+    #ifndef NDEBUG
+    DrawDebug::Clean();
+    #endif 
 
-        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-        SetPosition(obj, newPosition);
-        obj->Update3DPosition(true);
-        body->SetLinearVelocity(velocityVector);
-    } else {
-        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-        SetPosition(obj, pos);
-        obj->Update3DPosition(true);
+    auto box = GeoMath::Box(obj, pos);
+        
+    pos += box.GetPosition() - box.GetCenter();
+
+
+
+    if (ray.hasHit) {
+        box = GeoMath::Box(obj, pos);
+
+        auto center = box.GetCenter();
+
+        auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
+
+        auto ratio = GeoMath::isectBox(end, center, box);
+
+        auto length = (center - end).Length();
+
+        if (length != 0) {
+            auto r = ratio / length;
+            auto position = (center * r) + (end * (1 - r));
+
+            pos -= box.GetCenter() - position;
+
+            #ifndef NDEBUG
+
+            DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
+            DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
+            DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
+
+            #endif 
+        }
     }
+
+        
+
+    #ifndef NDEBUG
+        box = GeoMath::Box(obj, pos);
+        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
+    #endif 
+
+
+
+    SetPosition(obj, pos);
+    obj->Update3DPosition(true);
 }
 
 float Manager::NormalizeAngle(float angle) {
@@ -116,7 +147,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         const auto config = Config::GetSingleton();
         angle = {0, 0};
         fistPersonDistance = config->TranslateZMinDefaultDistance;
-        thirdPersonDistance = config->TranslateZMinDefaultThirdPersonDistance;
+        thirdPersonDistance = config->TranslateZMinDefaultDistance;
         position = {0, 0};
 
         doRotate = false;
@@ -140,7 +171,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 if (config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         oldCollisionLayer = object3D->GetCollisionLayer();
-                        object3D->SetCollisionLayer(RE::COL_LAYER::kCamera);
+                        object3D->SetCollisionLayer(RE::COL_LAYER::kNonCollidable);
                     }
                 }
             }
@@ -176,8 +207,14 @@ void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
 
     const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
 
+    auto[ cameraAngle,cameraPosition ] = RayCast::GetCameraData();
+
+    auto player = RE::PlayerCharacter::GetSingleton();
+
+    auto playerHeadPosition = player->GetPosition() + RE::NiPoint3{0, 0, player->GetHeight()};
+
     if (camera->currentState->id == RE::CameraState::kThirdPerson) {
-        rayMaxDistance = thirdPersonDistance;
+        rayMaxDistance = thirdPersonDistance + (cameraPosition-playerHeadPosition).Length() * 2;
     } else {
         rayMaxDistance = fistPersonDistance;
     }
@@ -196,9 +233,9 @@ void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
             return true;
         };
 
-        const auto ray = RayCast::Cast(evaluator, rayMaxDistance);
+        auto ray = RayCast::Cast(evaluator, rayMaxDistance);
 
-        UpdateObjectTransform(obj, ray.position);
+        UpdateObjectTransform(obj, ray);
     });
 }
 
