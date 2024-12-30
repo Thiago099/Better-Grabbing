@@ -93,13 +93,14 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         
     pos += box.GetPosition() - box.GetCenter();
 
-    box = GeoMath::Box(obj, pos);
 
-    auto center = box.GetCenter();
 
     if (ray.hasHit) {
+        box = GeoMath::Box(obj, pos);
 
-        auto end = center + ray.normal * 1000;
+        auto center = box.GetCenter();
+
+        auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
 
         auto ratio = GeoMath::isectBox(end, center, box);
 
@@ -122,9 +123,9 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
     }
 
         
-    box = GeoMath::Box(obj, pos);
 
     #ifndef NDEBUG
+    box = GeoMath::Box(obj, pos);
     box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
