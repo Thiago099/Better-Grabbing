@@ -1,9 +1,7 @@
 #include "Manager.h"
 #include "DrawDebugExtension.h"
 #include "GeoMath.h"
-
-#include <d3d11.h>
-#pragma comment(lib, "d3d11.lib")
+#include "Geometry.h"
 
 namespace {
     RE::bhkRigidBody* GetRigidBody(const RE::TESObjectREFR* refr) {
@@ -56,14 +54,6 @@ namespace {
     }
 }
 
-UINT GetBufferLength(RE::ID3D11Buffer* reBuffer) {
-    auto buffer = reinterpret_cast<ID3D11Buffer*>(reBuffer);
-    D3D11_BUFFER_DESC bufferDesc = {};
-    buffer->GetDesc(&bufferDesc);
-    return bufferDesc.ByteWidth;
-}
-
-
 
 void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
@@ -86,7 +76,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
     const float z = position.y;
 
     auto pos = ray.position + RE::NiPoint3(x, y, z);
-
+    auto angle = RE::NiPoint3(newYaw, newPitch, newRoll);
     const auto body = GetRigidBody(obj);
 
     if (!body) {
@@ -96,83 +86,23 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
     const auto config = Config::GetSingleton();
 
 
-    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
     #ifndef NDEBUG
     DrawDebug::Clean();
     #endif 
 
-    auto box = GeoMath::Box(obj, pos);
-        
+    auto geo = Geometry(obj);
+
+    auto bound = geo.GetBoundingBox(angle, obj->GetScale());
+
+
+    auto box = GeoMath::Box(pos, bound);
+
     pos += box.GetPosition() - box.GetCenter();
 
 
-
     if (ray.hasHit) {
-        box = GeoMath::Box(obj, pos);
-
-        if (auto d3d = obj->Get3D()) {
-
-            int i = 0;
-            RE::BSGeometry* geo = nullptr;
-            RE::BSVisit::TraverseScenegraphGeometries(d3d, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
-                geo = a_geometry;
-                i++;
-                return RE::BSVisit::BSVisitControl::kContinue;
-            });
-
-            logger::trace("num geo: {}", i);
-
-            if (geo) {
-                auto& model = geo->GetGeometryRuntimeData();
-                if (auto triShape = model.rendererData) {
-                    const uint8_t* vertexData = triShape->rawVertexData;
-
-                    if (vertexData) {
-                    
-                        uint32_t stride = triShape->vertexDesc.GetSize();
-
-                        auto numPoints = GetBufferLength(triShape->vertexBuffer);
-                        auto numIndexes = GetBufferLength(triShape->indexBuffer) / sizeof(uint16_t);
-
-                        RE::NiPoint3* positions = new RE::NiPoint3[numPoints / stride];
-        
-                        for (auto i = 0; i < numPoints; i += stride) {
-
-                            const uint8_t* currentVertex = vertexData + i;
-
-                            const float* position = reinterpret_cast<const float*>(
-                                currentVertex + triShape->vertexDesc.GetAttributeOffset(
-                                                    RE::BSGraphics::Vertex::Attribute::VA_POSITION));
-
-                            auto pos = RE::NiPoint3{position[0], position[1], position[2]} + obj->GetPosition();
-                            positions[i / stride] = pos;
-                        }
-
-                        logger::trace("num indexes {}", numIndexes);
-
-                        for (auto i = 0; i < numIndexes; i += 3) {
-                            const uint16_t* currentIndex = triShape->rawIndexData + i;
-                            auto p1 = positions[currentIndex[0]];
-                            auto p2 = positions[currentIndex[1]];
-                            auto p3 = positions[currentIndex[2]];
-                            DrawDebug::DrawLine(p1, p2);
-                            DrawDebug::DrawLine(p2, p3);
-                            DrawDebug::DrawLine(p3, p1);
-                        }
-                        delete[] positions;
-                    } else {
-                        logger::trace("missing vertex");
-                    }
-                } else {
-                    logger::trace("missing shape");
-                }
-            } else {
-                logger::trace("missing geo");
-            }
-        } else {
-            logger::trace("missing 3d");
-        }
+        box = GeoMath::Box(pos, bound);
 
         auto center = box.GetCenter();
 
@@ -198,15 +128,15 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         }
     }
 
-        
 
     #ifndef NDEBUG
-        box = GeoMath::Box(obj, pos);
+        box = GeoMath::Box(pos, bound);
+        //geo.DrawEdges(pos, angle, 1.0f);
         box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
 
-
+    SetAngle(obj, angle);
     SetPosition(obj, pos);
     obj->Update3DPosition(true);
 }

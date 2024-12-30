@@ -1,3 +1,5 @@
+#pragma once
+
 #include <algorithm>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -24,7 +26,7 @@ namespace Conversion {
 
 
 namespace GeoMath {
-    float isectSphere(const vec3& p0, const vec3& p1, const vec3& C, float R) {
+    inline float isectSphere(const vec3& p0, const vec3& p1, const vec3& C, float R) {
         vec3 A = p0;
         vec3 B = glm::normalize(p1 - p0);
         vec3 oc = A - C;
@@ -41,7 +43,7 @@ namespace GeoMath {
         return -1.0f;
     }
 
-    float isectPlane(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC,
+    inline float isectPlane(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC,
                      vec3& intersection) {
         vec3 R0 = p0;
         vec3 D = glm::normalize(p1 - p0);
@@ -51,17 +53,17 @@ namespace GeoMath {
         return dist_isect;
     }
 
-    bool PointInOrOn(const vec3& P1, const vec3& P2, const vec3& A, const vec3& B) {
+    inline bool PointInOrOn(const vec3& P1, const vec3& P2, const vec3& A, const vec3& B) {
         vec3 CP1 = glm::cross(B - A, P1 - A);
         vec3 CP2 = glm::cross(B - A, P2 - A);
         return glm::dot(CP1, CP2) >= 0.0f;
     }
 
-    bool PointInOrOnTriangle(const vec3& P, const vec3& A, const vec3& B, const vec3& C) {
+    inline bool PointInOrOnTriangle(const vec3& P, const vec3& A, const vec3& B, const vec3& C) {
         return PointInOrOn(P, A, B, C) && PointInOrOn(P, B, C, A) && PointInOrOn(P, C, A, B);
     }
 
-    float isectTriangle(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC) {
+    inline float isectTriangle(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC) {
         vec3 intersection;
         float t = isectPlane(p0, p1, PA, PB, PC, intersection);
         if (t >= 0 && PointInOrOnTriangle(intersection, PA, PB, PC)) {
@@ -70,11 +72,12 @@ namespace GeoMath {
         return -1.0f;
     }
 
-    bool PointInOrOnQuad(const vec3& P, const vec3& A, const vec3& B, const vec3& C, const vec3& D) {
+    inline bool PointInOrOnQuad(const vec3& P, const vec3& A, const vec3& B, const vec3& C, const vec3& D) {
         return PointInOrOn(P, A, B, C) && PointInOrOn(P, B, C, D) && PointInOrOn(P, C, D, A) && PointInOrOn(P, D, A, B);
     }
 
-    float isectQuad(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC, const vec3& PD) {
+    inline float isectQuad(const vec3& p0, const vec3& p1, const vec3& PA, const vec3& PB, const vec3& PC,
+                           const vec3& PD) {
         vec3 intersection;
         float t = isectPlane(p0, p1, PA, PB, PC, intersection);
         if (t >= 0 && PointInOrOnQuad(intersection, PA, PB, PC, PD)) {
@@ -83,7 +86,7 @@ namespace GeoMath {
         return -1.0f;
     }
 
-    float isectCuboid(const vec3& p0, const vec3& p1, const vec3& pMin, const vec3& pMax) {
+    inline float isectCuboid(const vec3& p0, const vec3& p1, const vec3& pMin, const vec3& pMax) {
         float t = -1.0f;
         vec3 pl[] = {{pMin.x, pMin.y, pMin.z}, {pMax.x, pMin.y, pMin.z}, {pMax.x, pMax.y, pMin.z},
                      {pMin.x, pMax.y, pMin.z}, {pMin.x, pMin.y, pMax.z}, {pMax.x, pMin.y, pMax.z},
@@ -159,6 +162,14 @@ namespace GeoMath {
             center = ToGlmPoint((from + to) / 2);
             FromP1AndP2(ToGlmPoint(from), ToGlmPoint(to), ToGlmPoint(angle));
         }
+        Box(RE::NiPoint3 position, std::pair<RE::NiPoint3, RE::NiPoint3> bound) {
+            using namespace Conversion;
+            auto from = position + bound.first;
+            auto to = position + bound.second;
+            this->position = ToGlmPoint(position);
+            center = ToGlmPoint((from + to) / 2);
+            FromP1AndP2(ToGlmPoint(from), ToGlmPoint(to), glm::vec3{0, 0, 0});
+        }
         void Draw(glm::vec4 color = DrawDebug::Color::Red) {
             using namespace Conversion;
             DrawDebug::DrawLine(ToSkyrimPoint(v1), ToSkyrimPoint(v2), color);
@@ -211,7 +222,7 @@ namespace GeoMath {
     };
 
 
-    float isectBox(const vec3& p0, const vec3& p1, Box& box) {
+    inline float isectBox(const vec3& p0, const vec3& p1, Box& box) {
         float t = -1.0f;
         auto pl = box.getFaces();
         for (auto& qi : pl) {
@@ -222,7 +233,7 @@ namespace GeoMath {
         }
         return t;
     }
-    float isectBox(const RE::NiPoint3& p0, const RE::NiPoint3& p1, Box& box) {
+    inline float isectBox(const RE::NiPoint3& p0, const RE::NiPoint3& p1, Box& box) {
         using namespace Conversion;
         return isectBox(ToGlmPoint(p0), ToGlmPoint(p1), box);
     }

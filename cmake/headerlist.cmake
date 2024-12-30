@@ -14,4 +14,5 @@ set(headers ${headers}
 	include/DrawDebug.h
 	include/DrawDebugExtension.h
 	include/GeoMath.h
+	include/Geometry.h
 )
