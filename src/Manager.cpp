@@ -145,7 +145,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         const auto config = Config::GetSingleton();
         angle = {0, 0};
         fistPersonDistance = config->TranslateZMinDefaultDistance;
-        thirdPersonDistance = config->TranslateZMinDefaultThirdPersonDistance;
+        thirdPersonDistance = config->TranslateZMinDefaultDistance;
         position = {0, 0};
 
         doRotate = false;
@@ -205,8 +205,14 @@ void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
 
     const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
 
+    auto[ cameraAngle,cameraPosition ] = RayCast::GetCameraData();
+
+    auto player = RE::PlayerCharacter::GetSingleton();
+
+    auto playerHeadPosition = player->GetPosition() + RE::NiPoint3{0, 0, player->GetHeight()};
+
     if (camera->currentState->id == RE::CameraState::kThirdPerson) {
-        rayMaxDistance = thirdPersonDistance;
+        rayMaxDistance = thirdPersonDistance + (cameraPosition-playerHeadPosition).Length() * 2;
     } else {
         rayMaxDistance = fistPersonDistance;
     }

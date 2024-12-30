@@ -35,9 +35,7 @@ public:
     float TranslateZMaxDistance = 1000.0f;
     float TranslateZMinDistance = 60.0f;
     float TranslateZMinDefaultDistance = 100.f;
-    float TranslateZMinDefaultThirdPersonDistance = 500.f;
 
     float DragMovementDamping = 1.0f;
     bool DisableCollisionWithItemsWhileGrabbing = true;
-    bool EnablePhysicalBasedMovement = true;
 };

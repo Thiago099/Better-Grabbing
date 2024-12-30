@@ -11,7 +11,7 @@
 class Manager {
     bool isGrabbing = false;
     float fistPersonDistance = 100.f;
-    float thirdPersonDistance = 500.f;
+    float thirdPersonDistance = 100.f;
     RE::NiPoint2 angle = {0, 0};
     RE::NiPoint2 position = {0, 0};
     RE::COL_LAYER oldCollisionLayer;
