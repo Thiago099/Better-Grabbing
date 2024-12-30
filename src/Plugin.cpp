@@ -9,7 +9,9 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kPostLoadGame || message->type == SKSE::MessagingInterface::kNewGame) {
         Manager::GetSingleton()->SetGrabbing(false, nullptr);
     }
-    DrawDebug::OnMessage(message);
+    #ifndef NDEBUG
+        DrawDebug::OnMessage(message);
+    #endif 
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface *skse) {

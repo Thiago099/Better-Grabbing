@@ -86,8 +86,9 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
     SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
-
+    #ifndef NDEBUG
     DrawDebug::Clean();
+    #endif 
 
     auto box = GeoMath::Box(obj, pos);
         
@@ -125,8 +126,8 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         
 
     #ifndef NDEBUG
-    box = GeoMath::Box(obj, pos);
-    box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
+        box = GeoMath::Box(obj, pos);
+        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
 
