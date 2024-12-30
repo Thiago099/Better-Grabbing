@@ -1032,7 +1032,6 @@ PS_OUTPUT main(PS_INPUT input) {
             if (renderables.lineSegments.size() > 0) {
                 std::shared_lock lock(renderables.lineSegmentsMutex);
                 renderables.lineDrawer->Submit(renderables.lineSegments);
-                renderables.lineSegments.clear();
             }
 
             SetDepthState(ctx, true, true, D3D11_COMPARISON_FUNC::D3D11_COMPARISON_ALWAYS);

@@ -83,76 +83,55 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
     const auto config = Config::GetSingleton();
 
-    if (config->EnablePhysicalBasedMovement) {
-        auto direction = (pos - obj->GetPosition()) * config->DragMovementDamping;
 
-        RE::hkVector4 velocityVector(direction);
-
-        RE::hkVector4 havockPosition;
-        body->GetPosition(havockPosition);
-        float components[4];
-        _mm_store_ps(components, havockPosition.quad);
-        RE::NiPoint3 newPosition = {components[0], components[1], components[2]};
-        constexpr auto havockToSkyrimConversionRate = 69.9915f;
-        newPosition *= havockToSkyrimConversionRate;
-
-        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
-        SetPosition(obj, newPosition);
-        obj->Update3DPosition(true);
-        body->SetLinearVelocity(velocityVector);
-    } else {
-        SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
+    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
 
-        const auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
+    DrawDebug::Clean();
 
-
-        DrawDebug::Clean();
-
-        auto box = GeoMath::Box(obj, pos);
+    auto box = GeoMath::Box(obj, pos);
         
-        pos += box.GetPosition() - box.GetCenter();
+    pos += box.GetPosition() - box.GetCenter();
 
-        box = GeoMath::Box(obj, pos);
+    box = GeoMath::Box(obj, pos);
 
-        auto center = box.GetCenter();
+    auto center = box.GetCenter();
 
-        if (ray.hasHit) {
+    if (ray.hasHit) {
 
-            auto end = center + ray.normal * 1000;
+        auto end = center + ray.normal * 1000;
 
-            auto ratio = GeoMath::isectBox(end, center, box);
+        auto ratio = GeoMath::isectBox(end, center, box);
 
-            auto length = (center - end).Length();
+        auto length = (center - end).Length();
 
-            if (length != 0) {
-                auto r = ratio / length;
-                auto position = (center * r) + (end * (1 - r));
+        if (length != 0) {
+            auto r = ratio / length;
+            auto position = (center * r) + (end * (1 - r));
 
-                pos -= box.GetCenter() - position;
+            pos -= box.GetCenter() - position;
 
-                #ifndef NDEBUG
+            #ifndef NDEBUG
 
-                DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
-                DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
-                DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
+            DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
+            DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
+            DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
 
-                #endif 
-            }
+            #endif 
         }
+    }
 
         
-        box = GeoMath::Box(obj, pos);
+    box = GeoMath::Box(obj, pos);
 
-        #ifndef NDEBUG
-        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
-        #endif 
+    #ifndef NDEBUG
+    box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
+    #endif 
 
 
 
-        SetPosition(obj, pos);
-        obj->Update3DPosition(true);
-    }
+    SetPosition(obj, pos);
+    obj->Update3DPosition(true);
 }
 
 float Manager::NormalizeAngle(float angle) {
@@ -190,7 +169,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 if (config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         oldCollisionLayer = object3D->GetCollisionLayer();
-                        object3D->SetCollisionLayer(RE::COL_LAYER::kCamera);
+                        object3D->SetCollisionLayer(RE::COL_LAYER::kNonCollidable);
                     }
                 }
             }
