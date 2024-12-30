@@ -140,6 +140,12 @@ namespace GeoMath {
 
             auto from = refr->GetBoundMin();
             auto to = refr->GetBoundMax();
+
+            if ((to - from).Length() < 1) {
+                from = {-10, -10, 0};
+                to = {10, 10, 20};
+            }
+
             from = position + from;
             to = position + to;
 
