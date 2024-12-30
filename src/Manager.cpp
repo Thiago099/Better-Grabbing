@@ -104,7 +104,6 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
 
-        #ifndef NDEBUG
         const auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
 
@@ -112,14 +111,11 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
         auto box = GeoMath::Box(obj, pos);
         
-        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
-        //auto diff = (box.GetPosition() - box.GetCenter())*2;
+        pos += box.GetPosition() - box.GetCenter();
+
+        box = GeoMath::Box(obj, pos);
 
         auto center = box.GetCenter();
-        //auto gab = box.GetPosition();
-        //auto meta = pos - diff;
-        //DrawDebug::DrawCube(gab, 3.0, glm::vec4{0.0, 1.0, 1.0, 1.0});
-        //DrawDebug::DrawCube(meta, 3.0, glm::vec4{1.0, 1.0, 0.0, 1.0});
 
         if (ray.hasHit) {
 
@@ -132,14 +128,27 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
             if (length != 0) {
                 auto r = ratio / length;
                 auto position = (center * r) + (end * (1 - r));
+
+                pos -= box.GetCenter() - position;
+
+                #ifndef NDEBUG
+
                 DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
                 DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
                 DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
+
+                #endif 
             }
         }
 
+        
+        box = GeoMath::Box(obj, pos);
 
+        #ifndef NDEBUG
+        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
         #endif 
+
+
 
         SetPosition(obj, pos);
         obj->Update3DPosition(true);
