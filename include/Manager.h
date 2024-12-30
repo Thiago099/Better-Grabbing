@@ -21,7 +21,7 @@ class Manager {
     static inline bool doTranslate = false;
     static inline bool doTranslateZ = false;
 
-    void UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& rayPosition) const;
+    void UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const;
     static float NormalizeAngle(float angle);
 
 public:

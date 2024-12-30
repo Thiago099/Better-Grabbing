@@ -51,15 +51,14 @@ std::pair<RE::NiPoint3, RE::NiPoint3> RayCast::GetCameraData() {
     return {QuaternionToEuler(rotation), translation};
 }
 
-RayCastResult RayCast::Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, const float raySize) {
+RayOutput RayCast::Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, const float raySize) {
 
     auto [camera_rotation, camera_position] = GetCameraData();
 
-    auto [ray_position, ray_object] = CastRay(camera_rotation, camera_position, evaluator, raySize);
-    return RayCastResult(ray_position, ray_object);
+    return CastRay(camera_rotation, camera_position, evaluator, raySize);
 }
 
-std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
+RayOutput RayCast::CastRay(
     RE::NiPoint3 angle, RE::NiPoint3 position,
     std::function<bool(RE::NiAVObject*)> const& evaluator, float raySize) {
     using namespace RayMath;
@@ -103,8 +102,10 @@ std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
         }
     }
 
+
     if (!best.body) {
-        return std::pair(ray_end, nullptr);
+        return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, ray_end, best.hitFraction,
+                         best.body, nullptr, false};
     }
 
     auto hitpos = ray_start + (ray_end - ray_start) * best.hitFraction;
@@ -112,7 +113,10 @@ std::pair<RE::NiPoint3, RE::TESObjectREFR*> RayCast::CastRay(
     if (auto av = best.getAVObject()) {
         auto ref = av->GetUserData();
 
-        return {hitpos, ref};
+        return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, hitpos, best.hitFraction,
+                         best.body, ref, true};
+
     }
-    return std::pair(hitpos, nullptr);
+
+    return RayOutput{RE::NiPoint3{best.normal.x, best.normal.y, best.normal.z}, hitpos, best.hitFraction, best.body, nullptr, true};
 }

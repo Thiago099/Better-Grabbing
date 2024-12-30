@@ -1,6 +1,14 @@
 #pragma once
 #include <cmath>
 #include "RayCollector.h"
+struct RayOutput {
+    RE::NiPoint3 normal;
+    RE::NiPoint3 position;
+    float hitFraction;
+    const RE::hkpCdBody* body;
+    RE::TESObjectREFR* hitRef;
+    bool hasHit;
+};
 
 namespace RayMath{
     inline float pointDistance(const RE::NiPoint3 a, const RE::NiPoint3 b) {
@@ -41,20 +49,14 @@ namespace RayMath{
     }
 }
 
-struct RayCastResult;
 class RayCast {
-        static std::pair<RE::NiPoint3, RE::TESObjectREFR*> CastRay(
+        static RayOutput CastRay(
             RE::NiPoint3 angle, RE::NiPoint3 position,
             std::function<bool(RE::NiAVObject*)> const& evaluator, float raySize);
     public:
         static RE::NiPoint3 QuaternionToEuler(const RE::NiQuaternion& q);
         static std::pair<RE::NiPoint3, RE::NiPoint3> GetCameraData();
-        static RayCastResult Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, float raySize = 2000000000.f);
+        static RayOutput Cast(std::function<bool(RE::NiAVObject*)> const& evaluator, float raySize = 2000000000.f);
 
 
-};
-
-struct RayCastResult {
-    RE::NiPoint3 position;
-    RE::TESObjectREFR* object;
 };

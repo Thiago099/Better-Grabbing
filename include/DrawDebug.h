@@ -12,6 +12,6 @@ namespace DrawDebug {
     }
 
     void DrawLine(const RE::NiPoint3& start, const RE::NiPoint3& end, glm::vec4 color = Color::Red);
-
+    void DrawSphere(const RE::NiPoint3& a_center, float a_radius, glm::vec4 a_color); 
     void Clean();
 }

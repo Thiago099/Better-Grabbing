@@ -60,3 +60,15 @@ void DrawDebug::DrawBox(RE::NiPoint3& from, RE::NiPoint3& to, RE::NiPoint3& cent
     DrawLine(v3, v7, color);
     DrawLine(v4, v8, color);
 }
+
+void DrawDebug::DrawCube(RE::NiPoint3& center, float radius, RE::NiPoint3 euler, const glm::vec4& color) {
+
+    auto length = RE::NiPoint3(radius, radius, radius);
+    auto from = center - length;
+    auto to = center + length;
+    DrawBox(from, to, from, euler, color);
+}
+
+void DrawDebug::DrawCube(RE::NiPoint3& center, float radius, const glm::vec4& color) {
+    DrawCube(center, radius, {0, 0, 0}, color);
+}

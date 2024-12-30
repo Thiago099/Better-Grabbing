@@ -1061,8 +1061,7 @@ PS_OUTPUT main(PS_INPUT input) {
             drawHandler-> renderables.ClearLists();
         }
         static void DrawCircle(const RE::NiPoint3& a_base, const RE::NiPoint3& a_X, const RE::NiPoint3& a_Y,
-                               float a_radius, uint8_t a_numSides, float a_duration, glm::vec4 a_color,
-                               bool a_drawOnTop = false) {
+                               float a_radius, uint8_t a_numSides, glm::vec4 a_color) {
             const float angleDelta = 2.0f * glm::pi<float>() / a_numSides;
             RE::NiPoint3 lastVertex = a_base + a_X * a_radius;
 
@@ -1196,6 +1195,18 @@ PS_OUTPUT main(PS_INPUT input) {
 
     void DrawLine(const RE::NiPoint3& start, const RE::NiPoint3& end, glm::vec4 color) {
         DrawHandler::DrawLine(start, end, color);
+    }
+
+    void DrawSphere(const RE::NiPoint3& a_center, float a_radius, glm::vec4 a_color) {
+        constexpr int32_t collisionSides = 16;
+
+        constexpr RE::NiPoint3 xAxis{1.f, 0.f, 0.f};
+        constexpr RE::NiPoint3 yAxis{0.f, 1.f, 0.f};
+        constexpr RE::NiPoint3 zAxis{0.f, 0.f, 1.f};
+
+        DrawHandler::DrawCircle(a_center, xAxis, yAxis, a_radius, collisionSides, a_color);
+        DrawHandler::DrawCircle(a_center, xAxis, zAxis, a_radius, collisionSides, a_color);
+        DrawHandler::DrawCircle(a_center, yAxis, zAxis, a_radius, collisionSides, a_color);
     }
 
 

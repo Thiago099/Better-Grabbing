@@ -10,7 +10,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <shared_mutex>
 #include "Windows.h"
-
+#include "DrawDebugExtension.h"
 using glm::vec3;
 using std::min;
 
@@ -113,14 +113,14 @@ namespace GeoMath {
 
         RE::NiPoint3 Rotate(const RE::NiPoint3& A, const RE::NiPoint3& angles) {
             RE::NiMatrix3 R;
-            R.EulerAnglesToAxesZXY(angles);
+            R.SetEulerAnglesXYZ(angles);
             return R * A;
         }
 
         void FromP1AndP2(glm::vec3 from, glm::vec3 to, glm::vec3 eulerAngles) {
             using namespace Conversion;
 
-            auto center = ToSkyrimPoint((from + to) / 2.0f);
+            auto center = ToSkyrimPoint(position);
             euler = ToSkyrimPoint(eulerAngles);
 
             v1 = ToGlmPoint(Rotate(RE::NiPoint3(from.x, from.y, from.z) - center, euler) + center);
@@ -135,9 +135,8 @@ namespace GeoMath {
 
         }
     public:
-        Box(RE::TESObjectREFR* refr) {
+        Box(RE::TESObjectREFR* refr, RE::NiPoint3 position) {
             using namespace Conversion;
-            auto position = refr->GetPosition();
 
             auto from = refr->GetBoundMin();
             auto to = refr->GetBoundMax();
@@ -154,6 +153,25 @@ namespace GeoMath {
             center = ToGlmPoint((from + to) / 2);
             FromP1AndP2(ToGlmPoint(from), ToGlmPoint(to), ToGlmPoint(angle));
         }
+        void Draw(glm::vec4 color = DrawDebug::Color::Red) {
+            using namespace Conversion;
+            DrawDebug::DrawLine(ToSkyrimPoint(v1), ToSkyrimPoint(v2), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v2), ToSkyrimPoint(v3), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v3), ToSkyrimPoint(v4), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v4), ToSkyrimPoint(v1), color);
+
+            // Draw top face
+            DrawDebug::DrawLine(ToSkyrimPoint(v5), ToSkyrimPoint(v6), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v6), ToSkyrimPoint(v7), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v7), ToSkyrimPoint(v8), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v8), ToSkyrimPoint(v5), color);
+
+            // Connect bottom and top faces
+            DrawDebug::DrawLine(ToSkyrimPoint(v1), ToSkyrimPoint(v5), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v2), ToSkyrimPoint(v6), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v3), ToSkyrimPoint(v7), color);
+            DrawDebug::DrawLine(ToSkyrimPoint(v4), ToSkyrimPoint(v8), color);
+        }
         std::vector<std::vector<glm::vec3>> getFaces() {
             std::vector<std::vector<glm::vec3>> faces = {
                 {v1, v2, v3, v4},
@@ -167,7 +185,7 @@ namespace GeoMath {
         }
         RE::NiPoint3 GetCenter() {
             using namespace Conversion;
-            return Conversion::ToSkyrimPoint(center);
+            return Conversion::ToSkyrimPoint((v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8) / 8.0f);
         }
         RE::NiPoint3 GetPosition() {
             using namespace Conversion;

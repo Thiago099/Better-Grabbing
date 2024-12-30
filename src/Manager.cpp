@@ -53,7 +53,7 @@ namespace {
     }
 }
 
-void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& rayPosition) const {
+void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
     const auto yoffsetRotation = angle.y;
@@ -73,7 +73,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
     const float y = position.x * sin(-cameraAngle.z);
     const float z = position.y;
 
-    const auto pos = rayPosition + RE::NiPoint3(x, y, z);
+    auto pos = ray.position + RE::NiPoint3(x, y, z);
 
     const auto body = GetRigidBody(obj);
 
@@ -107,18 +107,37 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, const RE::NiPoint3& 
         #ifndef NDEBUG
         const auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
+
         DrawDebug::Clean();
-        auto box = GeoMath::Box(obj);
 
-        auto ratio = GeoMath::isectBox(cameraPosition, rayPosition + RayMath::rotate(10, cameraAngle), box);
+        auto box = GeoMath::Box(obj, pos);
+        
+        box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
+        //auto diff = (box.GetPosition() - box.GetCenter())*2;
 
-        logger::trace("{}", ratio);
+        auto center = box.GetCenter();
+        //auto gab = box.GetPosition();
+        //auto meta = pos - diff;
+        //DrawDebug::DrawCube(gab, 3.0, glm::vec4{0.0, 1.0, 1.0, 1.0});
+        //DrawDebug::DrawCube(meta, 3.0, glm::vec4{1.0, 1.0, 0.0, 1.0});
 
-         if (ratio != -1) {
-         }
+        if (ray.hasHit) {
 
-        DrawDebug::DrawLine(box.GetPosition(), rayPosition, {0, 255, 0, 100});
-        DrawDebug::DrawBoundingBox(obj);
+            auto end = center + ray.normal * 1000;
+
+            auto ratio = GeoMath::isectBox(end, center, box);
+
+            auto length = (center - end).Length();
+
+            if (length != 0) {
+                auto r = ratio / length;
+                auto position = (center * r) + (end * (1 - r));
+                DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
+                DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
+                DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
+            }
+        }
+
 
         #endif 
 
@@ -218,9 +237,9 @@ void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
             return true;
         };
 
-        const auto ray = RayCast::Cast(evaluator, rayMaxDistance);
+        auto ray = RayCast::Cast(evaluator, rayMaxDistance);
 
-        UpdateObjectTransform(obj, ray.position);
+        UpdateObjectTransform(obj, ray);
     });
 }
 
