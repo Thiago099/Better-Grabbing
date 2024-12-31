@@ -13,7 +13,6 @@ UINT GetBufferLength(RE::ID3D11Buffer* reBuffer) {
 
 void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGeometry* o3d, RE::BSGraphics::TriShape*)> callback) {
     if (auto d3d = obj->Get3D()) {
-        int i = 0;
 
         RE::BSVisit::TraverseScenegraphGeometries(d3d, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 
@@ -23,34 +22,19 @@ void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGeometry* o3d
 
                 callback(a_geometry, triShape);
             }
-            i++;
 
             return RE::BSVisit::BSVisitControl::kContinue;
         });
 
     } 
 }
-bool ToYawPitchRoll(RE::NiMatrix3& angle) {
-    float yaw = 0;
-    float pitch = 0;
-    float roll = 0;
-    pitch = std::asin(-angle.entry[2][0]);
-    if (std::abs(angle.entry[2][0]) < 0.9999f) {
-        yaw = std::atan2(angle.entry[2][1], angle.entry[2][2]);
-        roll = std::atan2(angle.entry[1][0], angle.entry[0][0]);
-    } else {
-        yaw = 0.0f;
-        roll = std::atan2(-angle.entry[0][1], angle.entry[1][1]);
-    }
-    return true;
-}
+
 void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape) {
     if (const uint8_t* vertexData = triShape->rawVertexData) {
         uint32_t stride = triShape->vertexDesc.GetSize();
         auto numPoints = GetBufferLength(triShape->vertexBuffer);
         auto numPositions = numPoints / stride;
         positions.reserve(positions.size() + numPositions);
-        logger::trace("NP:{}", numPositions);
         for (auto i = 0; i < numPoints; i += stride) {
             const uint8_t* currentVertex = vertexData + i;
 
@@ -68,7 +52,6 @@ void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triS
 }
 void Geometry::FetchIndexes(RE::BSGraphics::TriShape* triShape) {
     auto numIndexes = GetBufferLength(triShape->indexBuffer) / sizeof(uint16_t);
-    logger::trace("NI:{}", numIndexes);
 
     auto offset = indexes.size(); 
     indexes.reserve(indexes.size() + numIndexes);
@@ -95,7 +78,7 @@ Geometry::Geometry(RE::TESObjectREFR* obj) {
         this->obj = obj;
     EachGeometry(obj, [this](RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape) -> void {
         FetchVertexes(o3d, triShape);
-        FetchIndexes(triShape);
+        //FetchIndexes(triShape);
     });
 
     if (positions.size() == 0) {
@@ -103,8 +86,8 @@ Geometry::Geometry(RE::TESObjectREFR* obj) {
         auto to = obj->GetBoundMax();
 
         if ((to - from).Length() < 1) {
-            from = {-10, -10, 0};
-            to = {10, 10, 20};
+            from = {-5, -5, -5};
+            to = {5, 5, 5};
         }
         positions.push_back(RE::NiPoint3(from.x, from.y, from.z));
         positions.push_back(RE::NiPoint3(to.x, from.y, from.z));
