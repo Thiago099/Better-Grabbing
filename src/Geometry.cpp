@@ -30,7 +30,20 @@ void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGeometry* o3d
 
     }
 }
-
+bool ToYawPitchRoll(RE::NiMatrix3& angle) {
+    float yaw = 0;
+    float pitch = 0;
+    float roll = 0;
+    pitch = std::asin(-angle.entry[2][0]);
+    if (std::abs(angle.entry[2][0]) < 0.9999f) {
+        yaw = std::atan2(angle.entry[2][1], angle.entry[2][2]);
+        roll = std::atan2(angle.entry[1][0], angle.entry[0][0]);
+    } else {
+        yaw = 0.0f;
+        roll = std::atan2(-angle.entry[0][1], angle.entry[1][1]);
+    }
+    return true;
+}
 void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape) {
     if (const uint8_t* vertexData = triShape->rawVertexData) {
         uint32_t stride = triShape->vertexDesc.GetSize();
@@ -47,6 +60,8 @@ void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triS
 
             auto pos = RE::NiPoint3{position[0], position[1], position[2]};
             pos *= o3d->local.scale;
+            pos += o3d->local.translate;
+            pos = o3d->local.rotate * pos;
             positions.push_back(pos);
         }
     }
@@ -69,6 +84,7 @@ RE::NiPoint3 Geometry::Rotate(const RE::NiPoint3& A, const RE::NiPoint3& angles)
     R.SetEulerAnglesXYZ(angles);
     return R * A;
 }
+
 
 
 

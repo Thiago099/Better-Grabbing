@@ -98,6 +98,8 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
     auto box = GeoMath::Box(pos, bound);
 
+
+
     pos += box.GetPosition() - box.GetCenter();
 
     if (ray.hasHit) {
