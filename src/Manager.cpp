@@ -200,6 +200,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 if (const auto config = Config::GetSingleton(); config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         object3D->SetCollisionLayer(oldCollisionLayer);
+                        ref2->Update3DPosition(true);
                     }
                 }
             }
