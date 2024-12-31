@@ -133,7 +133,7 @@ public:
     }
     void SetGrabbing(bool value, const RE::TESObjectREFRPtr& ref);
     void RotateX(const float x) {
-        if (glm::abs(angle.y) > glm::half_pi<float>()) {
+        if (glm::abs(angle.y) > glm::pi<float>()) {
             angle.x = NormalizeAngle(angle.x - x);
         } else {
             angle.x = NormalizeAngle(angle.x + x);

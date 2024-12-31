@@ -100,34 +100,34 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
     pos += box.GetPosition() - box.GetCenter();
 
+    //if (ray.hasHit) {
 
-    if (ray.hasHit) {
-        box = GeoMath::Box(pos, bound);
+    box = GeoMath::Box(pos, bound);
 
-        auto center = box.GetCenter();
+    auto center = box.GetCenter();
 
-        auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
+    auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
 
-        auto ratio = GeoMath::isectBox(end, center, box);
+    auto ratio = GeoMath::isectBox(end, center, box);
 
-        auto length = (center - end).Length();
+    auto length = (center - end).Length();
 
-        if (length != 0) {
-            auto r = ratio / length;
-            auto position = (center * r) + (end * (1 - r));
+    if (length != 0) {
+        auto r = ratio / length;
+        auto position = (center * r) + (end * (1 - r));
 
-            pos -= box.GetCenter() - position;
+        pos -= box.GetCenter() - position;
 
-            #ifndef NDEBUG
+        #ifndef NDEBUG
 
-            DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
-            DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
-            DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
+        DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
+        DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
+        DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
 
-            #endif 
-        }
+        #endif 
     }
 
+    //}
 
     #ifndef NDEBUG
         box = GeoMath::Box(pos, bound);
