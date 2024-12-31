@@ -9,15 +9,19 @@ UINT GetBufferLength(RE::ID3D11Buffer* reBuffer) {
     buffer->GetDesc(&bufferDesc);
     return bufferDesc.ByteWidth;
 }
-void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGraphics::TriShape*)> callback) {
+
+
+void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGeometry* o3d, RE::BSGraphics::TriShape*)> callback) {
     if (auto d3d = obj->Get3D()) {
         int i = 0;
 
         RE::BSVisit::TraverseScenegraphGeometries(d3d, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 
             auto& model = a_geometry->GetGeometryRuntimeData();
+
             if (auto triShape = model.rendererData) {
-                callback(triShape);
+
+                callback(a_geometry, triShape);
             }
 
             return RE::BSVisit::BSVisitControl::kContinue;
@@ -27,7 +31,7 @@ void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGraphics::Tri
     }
 }
 
-void Geometry::FetchVertexes(RE::BSGraphics::TriShape* triShape) {
+void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape) {
     if (const uint8_t* vertexData = triShape->rawVertexData) {
         uint32_t stride = triShape->vertexDesc.GetSize();
         auto numPoints = GetBufferLength(triShape->vertexBuffer);
@@ -42,6 +46,7 @@ void Geometry::FetchVertexes(RE::BSGraphics::TriShape* triShape) {
                                                                    RE::BSGraphics::Vertex::Attribute::VA_POSITION));
 
             auto pos = RE::NiPoint3{position[0], position[1], position[2]};
+            pos *= o3d->local.scale;
             positions.push_back(pos);
         }
     }
@@ -72,9 +77,9 @@ Geometry::~Geometry() {
 
 Geometry::Geometry(RE::TESObjectREFR* obj) {
         this->obj = obj;
-    EachGeometry(obj, [this](RE::BSGraphics::TriShape* triShape) -> void {
-        FetchVertexes(triShape);
-        //FetchIndexes(triShape);
+    EachGeometry(obj, [this](RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape) -> void {
+        FetchVertexes(o3d, triShape);
+        FetchIndexes(triShape);
     });
 
 }

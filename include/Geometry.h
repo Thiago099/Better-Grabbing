@@ -6,7 +6,7 @@ class Geometry {
     std::vector<uint16_t> indexes;
     RE::TESObjectREFR* obj;
 
-	void FetchVertexes(RE::BSGraphics::TriShape* triShape);
+	void FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triShape);
     void FetchIndexes(RE::BSGraphics::TriShape* triShape);
 
     RE::NiPoint3 Rotate(const RE::NiPoint3& A, const RE::NiPoint3& angles);

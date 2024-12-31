@@ -100,7 +100,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
 
     pos += box.GetPosition() - box.GetCenter();
 
-    //if (ray.hasHit) {
+    if (ray.hasHit) {
 
     box = GeoMath::Box(pos, bound);
 
@@ -127,11 +127,11 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         #endif 
     }
 
-    //}
+    }
 
     #ifndef NDEBUG
         box = GeoMath::Box(pos, bound);
-        //geo.DrawEdges(pos, angle, 1.0f);
+        geo.DrawEdges(pos, angle, 1.0f);
         box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
