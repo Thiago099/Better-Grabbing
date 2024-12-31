@@ -23,12 +23,12 @@ void EachGeometry(RE::TESObjectREFR* obj, std::function<void(RE::BSGeometry* o3d
 
                 callback(a_geometry, triShape);
             }
+            i++;
 
             return RE::BSVisit::BSVisitControl::kContinue;
         });
 
-
-    }
+    } 
 }
 bool ToYawPitchRoll(RE::NiMatrix3& angle) {
     float yaw = 0;
@@ -97,6 +97,25 @@ Geometry::Geometry(RE::TESObjectREFR* obj) {
         FetchVertexes(o3d, triShape);
         FetchIndexes(triShape);
     });
+
+    if (positions.size() == 0) {
+        auto from = obj->GetBoundMin();
+        auto to = obj->GetBoundMax();
+
+        if ((to - from).Length() < 1) {
+            from = {-10, -10, 0};
+            to = {10, 10, 20};
+        }
+        positions.push_back(RE::NiPoint3(from.x, from.y, from.z));
+        positions.push_back(RE::NiPoint3(to.x, from.y, from.z));
+        positions.push_back(RE::NiPoint3(to.x, to.y, from.z));
+        positions.push_back(RE::NiPoint3(from.x, to.y, from.z));
+
+        positions.push_back(RE::NiPoint3(from.x, from.y, to.z));
+        positions.push_back(RE::NiPoint3(to.x, from.y, to.z));
+        positions.push_back(RE::NiPoint3(to.x, to.y, to.z));
+        positions.push_back(RE::NiPoint3(from.x, to.y, to.z));
+    }
 
 }
 
