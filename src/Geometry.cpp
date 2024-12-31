@@ -43,9 +43,7 @@ void Geometry::FetchVertexes(RE::BSGeometry* o3d, RE::BSGraphics::TriShape* triS
                                                                    RE::BSGraphics::Vertex::Attribute::VA_POSITION));
 
             auto pos = RE::NiPoint3{position[0], position[1], position[2]};
-            pos *= o3d->local.scale;
-            pos += o3d->local.translate;
-            pos = o3d->local.rotate * pos;
+            pos = o3d->local * pos;
             positions.push_back(pos);
         }
     }
