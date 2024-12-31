@@ -142,7 +142,7 @@ std::pair<RE::NiPoint3, RE::NiPoint3> Geometry::GetBoundingBox(RE::NiPoint3 angl
     auto max = RE::NiPoint3{0, 0, 0};
 
     for (auto i = 0; i < positions.size(); i++) {
-        auto p1 = Rotate(positions[i] * obj->GetScale(), angle);
+        auto p1 = Rotate(positions[i] * scale, angle);
 
         if (p1.x < min.x) {
             min.x = p1.x;
