@@ -1,6 +1,7 @@
 #include "Manager.h"
 #include "DrawDebugExtension.h"
 #include "GeoMath.h"
+#include "Geometry.h"
 
 namespace {
     RE::bhkRigidBody* GetRigidBody(const RE::TESObjectREFR* refr) {
@@ -53,6 +54,7 @@ namespace {
     }
 }
 
+
 void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
@@ -74,7 +76,7 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
     const float z = position.y;
 
     auto pos = ray.position + RE::NiPoint3(x, y, z);
-
+    auto angle = RE::NiPoint3(newYaw, newPitch, newRoll);
     const auto body = GetRigidBody(obj);
 
     if (!body) {
@@ -84,54 +86,59 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
     const auto config = Config::GetSingleton();
 
 
-    SetAngle(obj, RE::NiPoint3(newYaw, newPitch, newRoll));
 
     #ifndef NDEBUG
     DrawDebug::Clean();
     #endif 
 
-    auto box = GeoMath::Box(obj, pos);
-        
+    auto geo = Geometry(obj);
+
+    auto bound = geo.GetBoundingBox(angle, obj->GetScale());
+
+
+    auto box = GeoMath::Box(pos, bound);
+
+
+
     pos += box.GetPosition() - box.GetCenter();
 
+    //if (ray.hasHit) {
 
+    box = GeoMath::Box(pos, bound);
 
-    if (ray.hasHit) {
-        box = GeoMath::Box(obj, pos);
+    auto center = box.GetCenter();
 
-        auto center = box.GetCenter();
+    auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
 
-        auto end = center + RE::NiPoint3(0, 0, 1) * 1000;
+    auto ratio = GeoMath::isectBox(end, center, box);
 
-        auto ratio = GeoMath::isectBox(end, center, box);
+    auto length = (center - end).Length();
 
-        auto length = (center - end).Length();
+    if (length != 0) {
+        auto r = ratio / length;
+        auto position = (center * r) + (end * (1 - r));
 
-        if (length != 0) {
-            auto r = ratio / length;
-            auto position = (center * r) + (end * (1 - r));
+        pos -= box.GetCenter() - position;
 
-            pos -= box.GetCenter() - position;
+        #ifndef NDEBUG
 
-            #ifndef NDEBUG
+        DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
+        DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
+        DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
 
-            DrawDebug::DrawLine(center, position, {1.0, 0.0, 1.0, 1.0});
-            DrawDebug::DrawSphere(center, 1.0f, {1.0, 1.0, 0.0, 1.0});
-            DrawDebug::DrawSphere(position, 1.0f, {0.0, 1.0, 1.0, 1.0});
-
-            #endif 
-        }
+        #endif 
     }
 
-        
+    //}
 
     #ifndef NDEBUG
-        box = GeoMath::Box(obj, pos);
+        box = GeoMath::Box(pos, bound);
+        //geo.DrawEdges(pos, angle, 1.0f);
         box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
 
-
+    SetAngle(obj, angle);
     SetPosition(obj, pos);
     obj->Update3DPosition(true);
 }
@@ -193,6 +200,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 if (const auto config = Config::GetSingleton(); config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         object3D->SetCollisionLayer(oldCollisionLayer);
+                        ref2->Update3DPosition(true);
                     }
                 }
             }

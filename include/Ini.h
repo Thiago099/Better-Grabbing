@@ -40,7 +40,6 @@ namespace Ini {
             for (const auto& section : sorted_keys) {
                 result += std::format("\n[{}]\n\n{}", section, sections[section]);
             }
-            logger::trace("{}", result);
             return result;
         }
         void Write(const std::string& fileName) {

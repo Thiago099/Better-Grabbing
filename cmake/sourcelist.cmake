@@ -8,4 +8,5 @@ set(sources ${sources}
 	src/Ini.cpp
 	src/DrawDebug.cpp
 	src/DrawDebugExtension.cpp
+	src/Geometry.cpp
 )
