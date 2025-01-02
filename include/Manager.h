@@ -24,9 +24,19 @@ class Manager {
     void UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const;
     static float NormalizeAngle(float angle);
 
+    std::atomic<bool> isTryingToThrow = false;
+
 public:
 
-	std::atomic<bool> resetVelocityOnGrabEnd = true;
+    static bool GetIsTryingToThrow() {
+        return is_grab_n_throw_installed && Manager::GetSingleton()->isTryingToThrow.load();
+	}
+
+    static void SetIsTryingToThrow(bool value) {
+		if (is_grab_n_throw_installed) {
+            Manager::GetSingleton()->isTryingToThrow.store(value);
+		}
+	}
 
     static bool GetDoRotate() {
         return doRotate;

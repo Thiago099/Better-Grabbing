@@ -137,7 +137,6 @@ void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) cons
         box.Draw(ray.hasHit ? DrawDebug::Color::Green : DrawDebug::Color::Red);
     #endif 
 
-
     SetAngle(obj, angle);
     SetPosition(obj, pos);
     obj->Update3DPosition(true);
@@ -151,6 +150,9 @@ float Manager::NormalizeAngle(float angle) {
 
 void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
     if (value) {
+
+        SetIsTryingToThrow(false);
+
         const auto config = Config::GetSingleton();
         angle = {0, 0};
         fistPersonDistance = config->TranslateZMinDefaultDistance;
@@ -183,68 +185,61 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 }
             }
         }
-
     } else {
         if (ref) {
             if (const auto ref2 = ref.get()) {
                 if (ref2->As<RE::Actor>()) {
                     return;
                 }
-
-                if (resetVelocityOnGrabEnd.load()) {
-                    if (const auto body = GetRigidBody(ref2)) {
-                        body->SetLinearVelocity({});
-                    }
-                }
-
+     
                 if (const auto config = Config::GetSingleton(); config->DisableCollisionWithItemsWhileGrabbing) {
                     if (const auto object3D = ref2->Get3D()) {
                         object3D->SetCollisionLayer(oldCollisionLayer);
-                        ref2->Update3DPosition(true);
                     }
                 }
             }
         }
     }
     isGrabbing = value;
-    resetVelocityOnGrabEnd.store(true);
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
-    auto rayMaxDistance = 0.f;
+    if (!GetIsTryingToThrow()) {
+        auto rayMaxDistance = 0.f;
 
-    const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+        const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
 
-    auto[ cameraAngle,cameraPosition ] = RayCast::GetCameraData();
+        auto[ cameraAngle,cameraPosition ] = RayCast::GetCameraData();
 
-    auto player = RE::PlayerCharacter::GetSingleton();
+        auto player = RE::PlayerCharacter::GetSingleton();
 
-    auto playerHeadPosition = player->GetPosition() + RE::NiPoint3{0, 0, player->GetHeight()};
+        auto playerHeadPosition = player->GetPosition() + RE::NiPoint3{0, 0, player->GetHeight()};
 
-    if (camera->currentState->id == RE::CameraState::kThirdPerson) {
-        rayMaxDistance = thirdPersonDistance + (cameraPosition-playerHeadPosition).Length() * 2;
-    } else {
-        rayMaxDistance = fistPersonDistance;
+        if (camera->currentState->id == RE::CameraState::kThirdPerson) {
+            rayMaxDistance = thirdPersonDistance + (cameraPosition-playerHeadPosition).Length() * 2;
+        } else {
+            rayMaxDistance = fistPersonDistance;
+        }
+
+        SKSE::GetTaskInterface()->AddTask([this, obj, rayMaxDistance]() {
+            auto player3d = GetPlayer3d();
+
+            const auto evaluator = [player3d, obj](const RE::NiAVObject* mesh) {
+                if (mesh == player3d) {
+                    return false;
+                }
+                if (mesh->GetUserData() == obj) {
+                    return false;
+                }
+
+                return true;
+            };
+
+            auto ray = RayCast::Cast(evaluator, rayMaxDistance);
+
+            UpdateObjectTransform(obj, ray);
+        });
     }
-
-    SKSE::GetTaskInterface()->AddTask([this, obj, rayMaxDistance]() {
-        auto player3d = GetPlayer3d();
-
-        const auto evaluator = [player3d, obj](const RE::NiAVObject* mesh) {
-            if (mesh == player3d) {
-                return false;
-            }
-            if (mesh->GetUserData() == obj) {
-                return false;
-            }
-
-            return true;
-        };
-
-        auto ray = RayCast::Cast(evaluator, rayMaxDistance);
-
-        UpdateObjectTransform(obj, ray);
-    });
 }
 
 RE::BSContainer::ForEachResult ActiveEffectVisitor::Accept(RE::ActiveEffect* a_effect)
