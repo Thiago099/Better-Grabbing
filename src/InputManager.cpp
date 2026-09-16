@@ -103,3 +103,22 @@ void InputManager::AddSource(std::string actionName, std::string deviceName, std
     }
     inputs[device][idcode].push_back(GetId(actionName));
 }
+
+std::vector<std::pair<RE::INPUT_DEVICE, uint32_t>> InputManager::GetSources(std::string actionName) const {
+    actionName = ToLowerCase(actionName);
+
+    const auto actionIterator = idMap.find(actionName);
+    if (actionIterator == idMap.end()) {
+        return {};
+    }
+
+    std::vector<std::pair<RE::INPUT_DEVICE, uint32_t>> sources;
+    for (const auto& [device, deviceData] : inputs) {
+        for (const auto& [key, keyData] : deviceData) {
+            if (std::ranges::find(keyData, actionIterator->second) != keyData.end()) {
+                sources.emplace_back(static_cast<RE::INPUT_DEVICE>(device), key);
+            }
+        }
+    }
+    return sources;
+}

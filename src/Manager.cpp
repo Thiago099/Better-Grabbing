@@ -2,6 +2,7 @@
 #include "DrawDebugExtension.h"
 #include "GeoMath.h"
 #include "Geometry.h"
+#include "SkyPrompt.h"
 
 namespace {
     RE::bhkRigidBody* GetRigidBody(const RE::TESObjectREFR* refr) {
@@ -201,6 +202,12 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         }
     }
     isGrabbing = value;
+
+    if (isGrabbing) {
+        SkyPrompt::ShowControls();
+    } else {
+        SkyPrompt::HideControls();
+    }
 }
 
 void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {

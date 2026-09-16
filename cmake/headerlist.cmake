@@ -9,6 +9,7 @@ set(headers ${headers}
 	include/RayCollector.h
 	include/Manager.h
 	include/InputManager.h
+	include/SkyPrompt.h
 	include/Ini.h
 	include/Config.h
 	include/DrawDebug.h

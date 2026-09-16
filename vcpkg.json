@@ -13,7 +13,8 @@
     "directxtk",
     "boost-stl-interfaces",
     "clib-util",
-    "glm"
+    "glm",
+    "skyprompt-api"
   ],
   "overrides": [
     {

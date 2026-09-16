@@ -5,6 +5,7 @@ set(sources ${sources}
 	src/RayCollector.cpp
 	src/Manager.cpp
 	src/InputManager.cpp
+	src/SkyPrompt.cpp
 	src/Ini.cpp
 	src/DrawDebug.cpp
 	src/DrawDebugExtension.cpp

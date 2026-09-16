@@ -19,6 +19,7 @@ public:
     bool ProcessInput(RE::ButtonEvent* button);
     void AddSink(std::string actionName, std::function<void(RE::ButtonEvent*)> const& callback);
     void AddSource(std::string actionName, std::string deviceName, std::string buttonName);
+    std::vector<std::pair<RE::INPUT_DEVICE, uint32_t>> GetSources(std::string actionName) const;
 };
 
 inline std::map<std::string, RE::INPUT_DEVICE> deviceMap = {
