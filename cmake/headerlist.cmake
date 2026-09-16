@@ -10,6 +10,7 @@ set(headers ${headers}
 	include/Manager.h
 	include/InputManager.h
 	include/SkyPrompt.h
+	include/Translations.h
 	include/Ini.h
 	include/Config.h
 	include/DrawDebug.h

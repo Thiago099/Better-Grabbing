@@ -1,0 +1,7 @@
+{
+  "SkyPrompt.Rotate": "Rotate",
+  "SkyPrompt.Move": "Move",
+  "SkyPrompt.AdjustDistance": "Adjust distance",
+  "SkyPrompt.ResetPositionAndRotation": "Reset position and rotation",
+  "SkyPrompt.StopGrabbing": "Stop grabbing"
+}

@@ -1,5 +1,6 @@
 #include "Plugin.h"
 #include "DrawDebug.h"
+#include "Translations.h"
 
 void OnMessage(SKSE::MessagingInterface::Message* message) {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
@@ -17,6 +18,7 @@ void OnMessage(SKSE::MessagingInterface::Message* message) {
 SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SKSE::Init(skse);
     SetupLog();
+    Translations::Install();
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     logger::info("Plugin loaded");
     Hooks::Install();

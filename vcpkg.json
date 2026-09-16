@@ -13,6 +13,7 @@
     "directxtk",
     "boost-stl-interfaces",
     "clib-util",
+    "nlohmann-json",
     "glm",
     "skyprompt-api"
   ],

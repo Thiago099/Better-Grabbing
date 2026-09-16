@@ -2,6 +2,7 @@
 
 #include "InputManager.h"
 #include "Manager.h"
+#include "Translations.h"
 #include "SkyPrompt/API.hpp"
 
 #include <deque>
@@ -145,17 +146,17 @@ namespace {
     private:
         struct Control {
             std::string_view action;
-            std::string_view text;
+            std::string translationKey;
             SkyPromptAPI::PromptType type;
             SkyPromptAPI::ActionID actionID;
         };
 
         void BuildPrompts() {
-            constexpr std::array controls{
-                Control{"Rotation", "Rotate", SkyPromptAPI::PromptType::kHint, 0},
-                Control{"Translation", "Move", SkyPromptAPI::PromptType::kHint, 0},
-                Control{"ZTranslation", "Adjust distance", SkyPromptAPI::PromptType::kHint, 0},
-                Control{"ResetObjectTransform", "Reset position and rotation", SkyPromptAPI::PromptType::kHold,
+            const std::array controls{
+                Control{"Rotation", "SkyPrompt.Rotate", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"Translation", "SkyPrompt.Move", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"ZTranslation", "SkyPrompt.AdjustDistance", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"ResetObjectTransform", "SkyPrompt.ResetPositionAndRotation", SkyPromptAPI::PromptType::kHold,
                         resetObjectTransformAction},
             };
 
@@ -169,7 +170,7 @@ namespace {
                 }
 
                 prompts.emplace_back(
-                    control.text,
+                    Translations::Get(control.translationKey),
                     eventID++,
                     control.actionID,
                     control.type,
@@ -193,7 +194,7 @@ namespace {
 
             if (!interactionBindings.empty()) {
                 prompts.emplace_back(
-                    "Stop grabbing",
+                    Translations::Get("SkyPrompt.StopGrabbing"),
                     eventID++,
                     0,
                     SkyPromptAPI::PromptType::kHint,

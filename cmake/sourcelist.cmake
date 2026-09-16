@@ -6,6 +6,7 @@ set(sources ${sources}
 	src/Manager.cpp
 	src/InputManager.cpp
 	src/SkyPrompt.cpp
+	src/Translations.cpp
 	src/Ini.cpp
 	src/DrawDebug.cpp
 	src/DrawDebugExtension.cpp
