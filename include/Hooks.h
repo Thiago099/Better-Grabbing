@@ -46,6 +46,7 @@ namespace Hooks {
             //AE ID: 40556 AE Offset: 0x71 (Heuristic)
             builder->AddCall<GrabHook, 5, 14>(
                 39479, 0x69, 
+                40556, 0x71,
                 40556, 0x71
             );
 
@@ -64,7 +65,10 @@ namespace Hooks {
         static void Install(HookBuilder* builder) {
             //SE ID: 39479 SE Offset: 0xb85 (Heuristic)
             //AE ID: 40556 AE Offset: 0xaf0
-            builder->AddCall<GrabHook2, 5, 14>(39479, 0xb85, 40556, 0xaf0);
+            builder->AddCall<GrabHook2, 5, 14>(
+                39479, 0xb85, 
+                40556, 0xaf0, 
+                40556, 0xb10);
         }
     };
 
@@ -190,8 +194,8 @@ namespace Hooks {
         static void Install(HookBuilder* builder) {
             builder->AddCall<ProcessInputQueueHook, 5, 14>(
                 67315, 0x7B, 
-                68617, 0x7B//,
-                //0xC519E0, 0x81
+                68617, 0x7B,
+                68617, 0x7B
             );
         }
     };

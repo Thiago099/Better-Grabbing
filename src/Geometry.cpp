@@ -3,7 +3,7 @@
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 #include "GeoMath.h"
-UINT GetBufferLength(RE::ID3D11Buffer* reBuffer) {
+UINT GetBufferLength(REX::W32::ID3D11Buffer* reBuffer) {
     auto buffer = reinterpret_cast<ID3D11Buffer*>(reBuffer);
     D3D11_BUFFER_DESC bufferDesc = {};
     buffer->GetDesc(&bufferDesc);

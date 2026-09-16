@@ -13,26 +13,44 @@ template <class T, std::size_t N, std::size_t TS, WriteKind Kind>
 class HookItem : public GenericHookItem {
     int _ae_id;
     int _ae_offset;
+    int _ae17_id;
+    int _ae17_offset;
     int _se_id;
     int _se_offset;
 
 public:
-    HookItem(int se_id, int se_offset, int ae_id, int ae_offset) {
+    HookItem(int se_id, int se_offset, int ae_id, int ae_offset, int ae17_id, int ae17_offset) {
         _se_id = se_id;
         _ae_id = ae_id;
+        _ae17_id = ae17_id;
         _se_offset = se_offset;
         _ae_offset = ae_offset;
+        _ae17_offset = ae17_offset;
     }
     const size_t GetTrampolineSize() const { return TS; }
     void Install(SKSE::Trampoline& tranpoline) {
+        const auto version = REL::Module::get().version();
+        const auto is_version_1_7 = version.major() == 1 && version.minor() == 7;
+
         if (REL::Module::IsAE()) {
-            if (_ae_offset == 0x0) {
-                logger::error("Missing AE offset");
-                return;
-            }
-            if (_ae_id == 0) {
-                logger::error("Missing AE id");
-                return;
+            if (is_version_1_7) {
+                if (_ae17_offset == 0x0) {
+                    logger::error("Missing AE 1.7 offset");
+                    return;
+                }
+                if (_ae17_id == 0) {
+                    logger::error("Missing AE 1.7 id");
+                    return;
+                }
+            } else {
+                if (_ae_offset == 0x0) {
+                    logger::error("Missing AE offset");
+                    return;
+                }
+                if (_ae_id == 0) {
+                    logger::error("Missing AE id");
+                    return;
+                }
             }
         } else {
             if (_se_offset == 0x0) {
@@ -44,13 +62,13 @@ public:
                 return;
             }
         }
-        const REL::Relocation<std::uintptr_t> function{REL::RelocationID(_se_id, _ae_id)};
+        const REL::Relocation<std::uintptr_t> function{REL::RelocationID(_se_id, is_version_1_7 ? _ae17_id : _ae_id)};
         if constexpr (Kind == WriteKind::kCall) {
             T::originalFunction =
-                tranpoline.write_call<N>(function.address() + REL::Relocate(_se_offset, _ae_offset), T::thunk);
+                tranpoline.write_call<N>(function.address() + REL::Relocate(_se_offset, is_version_1_7 ? _ae17_offset : _ae_offset), T::thunk);
         } else {
             T::originalFunction =
-                tranpoline.write_branch<N>(function.address() + REL::Relocate(_se_offset, _ae_offset), T::thunk);
+                tranpoline.write_branch<N>(function.address() + REL::Relocate(_se_offset, is_version_1_7 ? _ae17_offset : _ae_offset), T::thunk);
         }
     };
 };
@@ -62,21 +80,21 @@ private:
 public:
     ~HookBuilder() { items.clear(); }
     template <class T, std::size_t N, std::size_t TS>
-    void AddCall(int se_id, int se_offset, int ae_id, int ae_offset) {
+    void AddCall(int se_id, int se_offset, int ae_id, int ae_offset, int ae17_id, int ae17_offset) {
         if constexpr (N != 5 && N != 6) {
             static_assert(false && N, "invalid call size");
         }
 
-        auto newItem = std::make_unique<HookItem<T, N, TS, WriteKind::kCall>>(se_id, se_offset, ae_id, ae_offset);
+        auto newItem = std::make_unique<HookItem<T, N, TS, WriteKind::kCall>>(se_id, se_offset, ae_id, ae_offset, ae17_id, ae17_offset);
         items.push_back(std::move(newItem));
     }
     template <class T, std::size_t N, std::size_t TS>
-    void AddBranch(int se_id, int se_offset, int ae_id, int ae_offset) {
+    void AddBranch(int se_id, int se_offset, int ae_id, int ae_offset, int ae17_id, int ae17_offset) {
         if constexpr (N != 5 && N != 6) {
             static_assert(false && N, "invalid call size");
         }
 
-        auto newItem = std::make_unique<HookItem<T, N, TS, WriteKind::kBranch>>(se_id, se_offset, ae_id, ae_offset);
+        auto newItem = std::make_unique<HookItem<T, N, TS, WriteKind::kBranch>>(se_id, se_offset, ae_id, ae_offset, ae17_id, ae17_offset);
         items.push_back(std::move(newItem));
     }
 
