@@ -186,6 +186,41 @@ float Manager::NormalizeAngle(float angle) {
     return angle - glm::pi<float>();
 }
 
+void Manager::ResetObjectTransform() {
+    if (!isGrabbing) {
+        return;
+    }
+
+    const auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
+    const float horizontalAngle = cameraAngle.z - initialCameraYaw;
+
+    RE::NiMatrix3 horizontalRotationDelta;
+    horizontalRotationDelta.SetEulerAnglesXYZ(0.0f, 0.0f, horizontalAngle);
+
+    currentOrientation = horizontalRotationDelta * initialOrientation;
+    appliedHorizontalAngle = horizontalAngle;
+    rotationDelta = {0, 0};
+    position = {0, 0};
+}
+
+void Manager::HandleResetObjectTransform(RE::ButtonEvent* button) {
+    if (SkyPrompt::UsesNativeResetHold()) {
+        resetHoldTriggered = false;
+        return;
+    }
+
+    constexpr float holdDuration = 1.0f;
+    if (button->IsDown() || button->IsUp()) {
+        resetHoldTriggered = false;
+        return;
+    }
+
+    if (button->IsHeld() && button->HeldDuration() >= holdDuration && !resetHoldTriggered) {
+        ResetObjectTransform();
+        resetHoldTriggered = true;
+    }
+}
+
 void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
     if (value) {
 
@@ -196,6 +231,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         fistPersonDistance = config->TranslateZMinDefaultDistance;
         thirdPersonDistance = config->TranslateZMinDefaultDistance;
         position = {0, 0};
+        resetHoldTriggered = false;
 
         doRotate = false;
         doTranslate = false;
@@ -208,7 +244,8 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 }
                 auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
                 const auto objectAngle = ref2->GetAngle();
-                currentOrientation.SetEulerAnglesXYZ(objectAngle);
+                initialOrientation.SetEulerAnglesXYZ(objectAngle);
+                currentOrientation = initialOrientation;
                 initialCameraYaw = cameraAngle.z;
                 appliedHorizontalAngle = 0.0f;
 

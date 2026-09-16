@@ -26,8 +26,7 @@ bool InputManager::ProcessInput(RE::ButtonEvent* button) {
             continue;
         }
         auto& action = actionIterator->second;
-        action(button);
-        actionsExecuted = true;
+        actionsExecuted = action(button) || actionsExecuted;
     }
     return actionsExecuted;
 }
@@ -61,6 +60,16 @@ bool InputManager::HasSource(std::string actionName) {
 }
 
 void InputManager::AddSink(std::string actionName, std::function<void(RE::ButtonEvent*)> const& callback) {
+    actionName = ToLowerCase(actionName);
+    actions.insert(std::make_pair(GetId(actionName), [callback](RE::ButtonEvent* button) {
+        callback(button);
+        return true;
+    }));
+}
+
+void InputManager::AddSinkWithResult(
+    std::string actionName,
+    std::function<bool(RE::ButtonEvent*)> const& callback) {
     actionName = ToLowerCase(actionName);
     actions.insert(std::make_pair(GetId(actionName), callback));
 }

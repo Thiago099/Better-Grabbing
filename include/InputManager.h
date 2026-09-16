@@ -1,7 +1,7 @@
 #pragma once
 
 class InputManager {
-    std::map<uint32_t, std::function<void(RE::ButtonEvent*)>> actions;
+    std::map<uint32_t, std::function<bool(RE::ButtonEvent*)>> actions;
     std::map<uint32_t, std::map<uint32_t, std::vector<uint32_t>>> inputs;
     uint32_t auto_increment = 0;
     std::map<std::string, uint32_t> idMap;
@@ -18,6 +18,7 @@ public:
     bool HasSource(std::string actionName);
     bool ProcessInput(RE::ButtonEvent* button);
     void AddSink(std::string actionName, std::function<void(RE::ButtonEvent*)> const& callback);
+    void AddSinkWithResult(std::string actionName, std::function<bool(RE::ButtonEvent*)> const& callback);
     void AddSource(std::string actionName, std::string deviceName, std::string buttonName);
     std::vector<std::pair<RE::INPUT_DEVICE, uint32_t>> GetSources(std::string actionName) const;
 };

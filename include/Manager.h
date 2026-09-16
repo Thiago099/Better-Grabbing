@@ -4,6 +4,7 @@
 #include "Raycast.h"
 #include "InputManager.h"
 #include "Config.h"
+#include "SkyPrompt.h"
 
 #define M_PI 3.14159265358979323846f
 
@@ -13,10 +14,12 @@ class Manager {
     float fistPersonDistance = 100.f;
     float thirdPersonDistance = 100.f;
     RE::NiPoint2 rotationDelta = {0, 0};
+    RE::NiMatrix3 initialOrientation;
     RE::NiMatrix3 currentOrientation;
     float initialCameraYaw = 0.0f;
     float appliedHorizontalAngle = 0.0f;
     RE::NiPoint2 position = {0, 0};
+    bool resetHoldTriggered = false;
     RE::COL_LAYER oldCollisionLayer;
     inline static Manager* singleton = nullptr;
 
@@ -25,6 +28,7 @@ class Manager {
     static inline bool doTranslateZ = false;
 
     void UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray);
+    void HandleResetObjectTransform(RE::ButtonEvent* button);
     static float NormalizeAngle(float angle);
 
     std::atomic<bool> isTryingToThrow = false;
@@ -137,6 +141,11 @@ public:
             const auto config = Config::GetSingleton();
             TranslateZ(-config->ButtonTranslateZSensitivity);
         });
+
+        input->AddSinkWithResult("ResetObjectTransform", [this](RE::ButtonEvent* button) {
+            HandleResetObjectTransform(button);
+            return !SkyPrompt::UsesNativeResetHold();
+        });
     }
     static Manager* GetSingleton() {
         if (!singleton) {
@@ -145,6 +154,7 @@ public:
         return singleton;
     }
     void SetGrabbing(bool value, const RE::TESObjectREFRPtr& ref);
+    void ResetObjectTransform();
     void RotateX(const float x) {
         rotationDelta.x = NormalizeAngle(rotationDelta.x + x);
     }

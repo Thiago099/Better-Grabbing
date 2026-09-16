@@ -1,9 +1,12 @@
 #include "SkyPrompt.h"
 
 #include "InputManager.h"
+#include "Manager.h"
 #include "SkyPrompt/API.hpp"
 
 namespace {
+    constexpr SkyPromptAPI::ActionID resetObjectTransformAction = 1;
+
     class GrabControlsPrompt final : public SkyPromptAPI::PromptSink {
     public:
         static GrabControlsPrompt* GetSingleton() {
@@ -30,8 +33,8 @@ namespace {
                 return;
             }
 
-            static_cast<void>(SkyPromptAPI::SendPrompt(this, clientID));
-            visible = true;
+            visible = SkyPromptAPI::SendPrompt(this, clientID);
+            nativeResetHold = visible && hasResetPrompt;
         }
 
         void Hide() {
@@ -41,12 +44,22 @@ namespace {
 
             SkyPromptAPI::RemovePrompt(this, clientID);
             visible = false;
+            nativeResetHold = false;
         }
 
-        void ProcessEvent(SkyPromptAPI::PromptEvent) const override {}
+        void ProcessEvent(const SkyPromptAPI::PromptEvent event) const override {
+            if (event.type == SkyPromptAPI::PromptEventType::kAccepted &&
+                event.prompt.actionID == resetObjectTransformAction) {
+                Manager::GetSingleton()->ResetObjectTransform();
+            }
+        }
 
         std::span<const SkyPromptAPI::Prompt> GetPrompts() const override {
             return prompts;
+        }
+
+        bool UsesNativeResetHold() const {
+            return nativeResetHold;
         }
 
     private:
@@ -55,13 +68,17 @@ namespace {
         struct Control {
             std::string_view action;
             std::string_view text;
+            SkyPromptAPI::PromptType type;
+            SkyPromptAPI::ActionID actionID;
         };
 
         void BuildPrompts() {
             constexpr std::array controls{
-                Control{"Rotation", "Rotate"},
-                Control{"Translation", "Move"},
-                Control{"ZTranslation", "Adjust distance"},
+                Control{"Rotation", "Rotate", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"Translation", "Move", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"ZTranslation", "Adjust distance", SkyPromptAPI::PromptType::kHint, 0},
+                Control{"ResetObjectTransform", "Reset position and rotation", SkyPromptAPI::PromptType::kHoldAndKeep,
+                        resetObjectTransformAction},
             };
 
             bindings.reserve(controls.size());
@@ -79,15 +96,21 @@ namespace {
                 prompts.emplace_back(
                     control.text,
                     eventID++,
-                    0,
-                    SkyPromptAPI::PromptType::kHint,
+                    control.actionID,
+                    control.type,
                     0,  // Keep the hint in the screen corner instead of attaching it to the grabbed reference.
                     bindings.back());
+
+                if (control.actionID == resetObjectTransformAction) {
+                    hasResetPrompt = true;
+                }
             }
         }
 
         SkyPromptAPI::ClientID clientID = 0;
         bool visible = false;
+        bool hasResetPrompt = false;
+        bool nativeResetHold = false;
         std::vector<std::vector<Binding>> bindings;
         std::vector<SkyPromptAPI::Prompt> prompts;
     };
@@ -99,4 +122,8 @@ void SkyPrompt::ShowControls() {
 
 void SkyPrompt::HideControls() {
     GrabControlsPrompt::GetSingleton()->Hide();
+}
+
+bool SkyPrompt::UsesNativeResetHold() {
+    return GrabControlsPrompt::GetSingleton()->UsesNativeResetHold();
 }
