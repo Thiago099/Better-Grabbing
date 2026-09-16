@@ -40,6 +40,25 @@ namespace {
         return func(ref, a_position);
     }
 
+    RE::NiPoint3 MatrixToEulerXYZ(const RE::NiMatrix3& rotation) {
+        RE::NiPoint3 result;
+        const float sinY = std::clamp(-rotation.entry[0][2], -1.0f, 1.0f);
+        result.y = std::asin(sinY);
+
+        if (std::abs(std::cos(result.y)) > 0.00001f) {
+            result.x = std::atan2(rotation.entry[1][2], rotation.entry[2][2]);
+            result.z = std::atan2(rotation.entry[0][1], rotation.entry[0][0]);
+        } else if (sinY > 0.0f) {
+            result.x = std::atan2(rotation.entry[1][0], rotation.entry[1][1]);
+            result.z = 0.0f;
+        } else {
+            result.x = std::atan2(-rotation.entry[1][0], rotation.entry[1][1]);
+            result.z = 0.0f;
+        }
+
+        return result;
+    }
+
     RE::NiObject* GetPlayer3d() {
         const auto refr = RE::PlayerCharacter::GetSingleton();
         if (!refr) {
@@ -56,28 +75,46 @@ namespace {
 }
 
 
-void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const {
+void Manager::UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) {
     auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
 
-    const auto yoffsetRotation = angle.y;
-    const auto xoffsetRoation = angle.x;
+    const float horizontalAngle = cameraAngle.z - initialCameraYaw;
+    RE::NiMatrix3 horizontalRotationDelta;
+    horizontalRotationDelta.SetEulerAnglesXYZ(
+        0.0f,
+        0.0f,
+        horizontalAngle - appliedHorizontalAngle);
 
-    const auto a = glm::rotate(glm::mat4(1.0f), xoffsetRoation, glm::vec3(1.0f, 0.0f, 0.0f));
-    const auto b = glm::rotate(glm::mat4(1.0f), yoffsetRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-    const auto c = glm::rotate(glm::mat4(1.0f), -cameraAngle.z, glm::vec3(1.0f, 0.0f, 0.0f));
+    currentOrientation = horizontalRotationDelta * currentOrientation;
+    appliedHorizontalAngle = horizontalAngle;
 
-    auto rotationMatrix = a * b * c;
+    if (rotationDelta.x != 0.0f || rotationDelta.y != 0.0f) {
+        RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+        RE::NiNode* cameraRoot = camera ? camera->cameraRoot.get() : nullptr;
+        if (cameraRoot) {
+            RE::NiMatrix3 horizontalDrag;
+            horizontalDrag.MakeZRotation(-rotationDelta.x);
 
-    const float newYaw = atan2(rotationMatrix[1][0], rotationMatrix[0][0]);
-    const float newPitch = asin(-rotationMatrix[2][0]);
-    const float newRoll = atan2(rotationMatrix[2][1], rotationMatrix[2][2]);
+            RE::NiMatrix3 verticalDrag;
+            verticalDrag.MakeXRotation(-rotationDelta.y);
+
+            const RE::NiMatrix3 cameraRotation = cameraRoot->world.rotate;
+            const RE::NiMatrix3 cameraVerticalDelta =
+                cameraRotation * verticalDrag * cameraRotation.Transpose();
+            const RE::NiMatrix3 cameraDelta =
+                cameraVerticalDelta * horizontalDrag;
+
+            currentOrientation = cameraDelta * currentOrientation;
+            rotationDelta = {0, 0};
+        }
+    }
 
     const float x = position.x * cos(-cameraAngle.z);
     const float y = position.x * sin(-cameraAngle.z);
     const float z = position.y;
 
     auto pos = ray.position + RE::NiPoint3(x, y, z);
-    auto angle = RE::NiPoint3(newYaw, newPitch, newRoll);
+    auto angle = MatrixToEulerXYZ(currentOrientation);
     const auto body = GetRigidBody(obj);
 
     if (!body) {
@@ -155,7 +192,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
         SetIsTryingToThrow(false);
 
         const auto config = Config::GetSingleton();
-        angle = {0, 0};
+        rotationDelta = {0, 0};
         fistPersonDistance = config->TranslateZMinDefaultDistance;
         thirdPersonDistance = config->TranslateZMinDefaultDistance;
         position = {0, 0};
@@ -171,7 +208,9 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
                 }
                 auto [cameraAngle, cameraPosition] = RayCast::GetCameraData();
                 const auto objectAngle = ref2->GetAngle();
-                angle = {-objectAngle.z + cameraAngle.z, 0};
+                currentOrientation.SetEulerAnglesXYZ(objectAngle);
+                initialCameraYaw = cameraAngle.z;
+                appliedHorizontalAngle = 0.0f;
 
                 if (const auto body = GetRigidBody(ref2)) {
                     body->SetLinearVelocity(RE::hkVector4());
@@ -210,7 +249,7 @@ void Manager::SetGrabbing(const bool value, const RE::TESObjectREFRPtr& ref) {
     }
 }
 
-void Manager::UpdatePosition(RE::TESObjectREFR* obj) const {
+void Manager::UpdatePosition(RE::TESObjectREFR* obj) {
     if (!GetIsTryingToThrow()) {
         auto rayMaxDistance = 0.f;
 

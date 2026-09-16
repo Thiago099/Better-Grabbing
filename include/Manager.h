@@ -12,7 +12,10 @@ class Manager {
     bool isGrabbing = false;
     float fistPersonDistance = 100.f;
     float thirdPersonDistance = 100.f;
-    RE::NiPoint2 angle = {0, 0};
+    RE::NiPoint2 rotationDelta = {0, 0};
+    RE::NiMatrix3 currentOrientation;
+    float initialCameraYaw = 0.0f;
+    float appliedHorizontalAngle = 0.0f;
     RE::NiPoint2 position = {0, 0};
     RE::COL_LAYER oldCollisionLayer;
     inline static Manager* singleton = nullptr;
@@ -21,7 +24,7 @@ class Manager {
     static inline bool doTranslate = false;
     static inline bool doTranslateZ = false;
 
-    void UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray) const;
+    void UpdateObjectTransform(RE::TESObjectREFR* obj, RayOutput& ray);
     static float NormalizeAngle(float angle);
 
     std::atomic<bool> isTryingToThrow = false;
@@ -143,14 +146,10 @@ public:
     }
     void SetGrabbing(bool value, const RE::TESObjectREFRPtr& ref);
     void RotateX(const float x) {
-        if (glm::abs(angle.y) > glm::half_pi<float>()) {
-            angle.x = NormalizeAngle(angle.x - x);
-        } else {
-            angle.x = NormalizeAngle(angle.x + x);
-        }
+        rotationDelta.x = NormalizeAngle(rotationDelta.x + x);
     }
     void RotateY(const float y) {
-        angle.y = NormalizeAngle(angle.y + y);
+        rotationDelta.y = NormalizeAngle(rotationDelta.y + y);
     }
     void TranslateX(const float x) {
         position.x += x;
@@ -189,7 +188,7 @@ public:
     bool GetIsGrabbing() const {
         return isGrabbing;
     }
-    void UpdatePosition(RE::TESObjectREFR* obj) const;
+    void UpdatePosition(RE::TESObjectREFR* obj);
     static bool IsTelekinesisObject(RE::TESObjectREFR* grabbed_ob);
 };
 
