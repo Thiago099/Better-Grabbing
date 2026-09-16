@@ -153,7 +153,7 @@ namespace {
                 Control{"Rotation", "Rotate", SkyPromptAPI::PromptType::kHint, 0},
                 Control{"Translation", "Move", SkyPromptAPI::PromptType::kHint, 0},
                 Control{"ZTranslation", "Adjust distance", SkyPromptAPI::PromptType::kHint, 0},
-                Control{"ResetObjectTransform", "Reset position and rotation", SkyPromptAPI::PromptType::kHoldAndKeep,
+                Control{"ResetObjectTransform", "Reset position and rotation", SkyPromptAPI::PromptType::kHold,
                         resetObjectTransformAction},
             };
 
