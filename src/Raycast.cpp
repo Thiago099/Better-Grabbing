@@ -31,10 +31,13 @@ RE::NiPoint3 RayCast::QuaternionToEuler(const RE::NiQuaternion& q) {
 
 std::pair<RE::NiPoint3, RE::NiPoint3> RayCast::GetCameraData() {
     const RE::PlayerCamera* camera = RE::PlayerCamera::GetSingleton();
+    if (!camera) {
+        return {};
+    }
     const auto thirdPerson =
-        reinterpret_cast<RE::ThirdPersonState*>(camera->cameraStates[RE::CameraState::kThirdPerson].get());
+        reinterpret_cast<RE::ThirdPersonState*>(camera->GetRuntimeData().cameraStates[RE::CameraState::kThirdPerson].get());
     const auto firstPerson =
-        reinterpret_cast<RE::FirstPersonState*>(camera->cameraStates[RE::CameraState::kFirstPerson].get());
+        reinterpret_cast<RE::FirstPersonState*>(camera->GetRuntimeData().cameraStates[RE::CameraState::kFirstPerson].get());
 
     RE::NiQuaternion rotation;
     RE::NiPoint3 translation;
@@ -75,7 +78,7 @@ RayOutput RayCast::CastRay(
 
     auto collector = RayCollector(evaluator);
     collector.Reset();
-    pick_data.rayHitCollectorA8 = reinterpret_cast<RE::hkpClosestRayHitCollector*>(&collector);
+    pick_data.closestRayHitCollector = reinterpret_cast<RE::hkpClosestRayHitCollector*>(&collector);
 
     const auto ply = RE::PlayerCharacter::GetSingleton();
     if (!ply->parentCell) return {};
