@@ -30,7 +30,7 @@ namespace Hooks {
         static bool UseDefaultGrabbingBehavior(RE::TESObjectREFR* obj2) {
 
             if (auto base = obj2->GetBaseObject()) {
-                if (base->As<RE::TESFlora>()) {
+                if (!base->IsInventoryObject()) {
                     return true;
                 }
             }
