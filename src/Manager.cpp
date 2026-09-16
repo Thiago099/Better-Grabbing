@@ -197,7 +197,7 @@ void Manager::ResetObjectTransform() {
     RE::NiMatrix3 horizontalRotationDelta;
     horizontalRotationDelta.SetEulerAnglesXYZ(0.0f, 0.0f, horizontalAngle);
 
-    currentOrientation = horizontalRotationDelta * initialOrientation;
+    currentOrientation = horizontalRotationDelta;
     appliedHorizontalAngle = horizontalAngle;
     rotationDelta = {0, 0};
     position = {0, 0};

@@ -57,6 +57,8 @@ namespace {
 
             if (event.type == SkyPromptAPI::PromptEventType::kAccepted &&
                 actionID == resetObjectTransformAction) {
+                SkyPromptAPI::RemovePrompt(this, clientID);
+                queued = SkyPromptAPI::SendPrompt(this, clientID);
                 Manager::GetSingleton()->ResetObjectTransform();
             }
         }
